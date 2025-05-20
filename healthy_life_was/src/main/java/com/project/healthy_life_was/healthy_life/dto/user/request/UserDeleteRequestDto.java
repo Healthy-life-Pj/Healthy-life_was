@@ -1,0 +1,30 @@
+package com.project.healthy_life_was.healthy_life.dto.user.request;
+
+import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import lombok.Getter;
+
+@Getter
+public class UserDeleteRequestDto {
+
+    @NotBlank(message = "비밀번호를 입력해주세요")
+    @Pattern(
+            regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,20}$",
+            message = "비밀번호는 영문, 숫자, 특수문자를 모두 포함한 8-20자여야 합니다"
+    )
+    private String userPassword;
+
+    @NotBlank(message = "비밀번호를 입력해주세요")
+    @Pattern(
+            regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,20}$",
+            message = "비밀번호는 영문, 숫자, 특수문자를 모두 포함한 8-20자여야 합니다"
+    )
+
+    private String confirmUserPassword;
+
+    @AssertTrue(message = "비밀번호가 일치하지 않습니다")
+    public boolean isPasswordMatching() {
+        return userPassword != null && userPassword.equals(confirmUserPassword);
+    }
+}

@@ -1,0 +1,69 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.2.9-SNAPSHOT'
+	id 'io.spring.dependency-management' version '1.1.6'
+}
+
+group = 'com.project'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+	maven { url 'https://repo.spring.io/snapshot' }
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	compileOnly 'org.projectlombok:lombok'
+	runtimeOnly 'com.mysql:mysql-connector-j'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	// 프로젝트 유효성 검사를 위한 의존성 입력
+	implementation('jakarta.validation:jakarta.validation-api:3.0.2')
+	implementation('commons-validator:commons-validator:1.7')
+
+	// JWT 의존성 추가
+	implementation('io.jsonwebtoken:jjwt-api:0.11.2')
+	implementation('io.jsonwebtoken:jjwt-impl:0.11.2')
+	implementation('io.jsonwebtoken:jjwt-jackson:0.11.2')
+
+	// 스프링 OAuth2
+	implementation('org.springframework.boot:spring-boot-starter-oauth2-client')
+
+	// 스프링 시큐리티 테스트를 위한 테스트 기능 제공
+	testImplementation('org.springframework.security:spring-security-test')
+	testImplementation('org.junit.jupiter:junit-jupiter:5.8.2')
+	testImplementation('org.assertj:assertj-core:3.24.2')
+	testImplementation('org.springframework.boot:spring-boot-starter-test')
+	testImplementation('org.junit.jupiter:junit-jupiter:5.8.2')
+	testImplementation('org.assertj:assertj-core:3.24.2')
+	testImplementation('org.springframework.boot:spring-boot-starter-test')
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	runtimeOnly 'com.h2database:h2'
+
+	// 스프링 이메일 기능 제공
+	implementation('org.springframework.boot:spring-boot-starter-mail')
+	implementation ('org.eclipse.angus:angus-mail:2.0.2')
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
