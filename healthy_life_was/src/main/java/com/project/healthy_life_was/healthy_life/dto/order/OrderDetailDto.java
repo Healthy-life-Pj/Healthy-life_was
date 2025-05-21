@@ -1,5 +1,6 @@
 package com.project.healthy_life_was.healthy_life.dto.order;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.project.healthy_life_was.healthy_life.entity.order.OrderDetail;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,8 +21,12 @@ public class OrderDetailDto {
     private String shippingRequest;
     private String orderStatus;
     private Long orderDetailId;
+    @JsonProperty("pId")
     private Long pId;
+    @JsonProperty("pName")
     private String pName;
+    @JsonProperty("pImgUrl")
+    private String pImgUrl;
     private int quantity;
     private int price;
     private int totalPrice;

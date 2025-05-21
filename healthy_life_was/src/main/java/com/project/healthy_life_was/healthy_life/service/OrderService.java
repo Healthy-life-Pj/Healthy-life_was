@@ -9,12 +9,16 @@ import com.project.healthy_life_was.healthy_life.dto.order.response.DirectOrderR
 import com.project.healthy_life_was.healthy_life.dto.order.response.OrderCancelResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.order.response.OrderDetailResponseDto;
 
+import java.time.LocalDate;
+
 public interface OrderService {
     ResponseDto<CartOrderResponseDto> cartOrder(String username, CartOrderRequestDto dto);
 
     ResponseDto<DirectOrderResponseDto> directOrder(String username, Long pId, DirectOrderRequestDto dto);
 
-    ResponseDto<OrderDetailResponseDto> getOrder(String username, OrderGetRequestDto dto);
+    ResponseDto<OrderDetailResponseDto> getOrder(String username, LocalDate startOrderDate, LocalDate endOrderDate);
 
-    ResponseDto<OrderCancelResponseDto> cancelOrder(String username, Long orderItemId);
+    ResponseDto<OrderCancelResponseDto> changeOrderStatus(String username, Long orderDetailId, String orderStatus);
+
+    ResponseDto<OrderCancelResponseDto> cancelReturnOrExchange(String username, Long orderDetailId);
 }

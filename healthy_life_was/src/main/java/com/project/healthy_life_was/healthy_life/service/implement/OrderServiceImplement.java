@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -116,15 +117,15 @@ public class OrderServiceImplement implements OrderService {
             orderRepository.save(order);
 
             List<OrderDetail> orderDetails = new ArrayList<>();
-                OrderDetail orderDetail = OrderDetail.builder()
-                        .order(order)
-                        .product(product)
-                        .quantity(quantity)
-                        .price(product.getPPrice())
-                        .totalPrice(quantity * product.getPPrice())
-                        .build();
-                orderDetailRepository.save(orderDetail);
-                orderDetails.add(orderDetail);
+            OrderDetail orderDetail = OrderDetail.builder()
+                    .order(order)
+                    .product(product)
+                    .quantity(quantity)
+                    .price(product.getPPrice())
+                    .totalPrice(quantity * product.getPPrice())
+                    .build();
+            orderDetailRepository.save(orderDetail);
+            orderDetails.add(orderDetail);
 
             data = new DirectOrderResponseDto(order, orderDetails);
             return ResponseDto.setSuccess(ResponseMessage.SUCCESS, data);
@@ -135,19 +136,17 @@ public class OrderServiceImplement implements OrderService {
     }
 
     @Override
-    public ResponseDto<OrderDetailResponseDto> getOrder(String username, OrderGetRequestDto dto) {
+    public ResponseDto<OrderDetailResponseDto> getOrder(String username, LocalDate startOrderDate, LocalDate endOrderDate) {
         OrderDetailResponseDto data = null;
 
-        LocalDate startOrderDate = dto.getStartOrderDate();
-        LocalDate endOrderDate = dto.getEndOrderDate();
         try {
-                List<OrderDetail> orderDetails;
+            List<OrderDetail> orderDetails;
 
-                if (startOrderDate == null && endOrderDate == null) {
-                    orderDetails = orderDetailRepository.findAllByOrder_User_Username(username);
-                } else {
-                    orderDetails = orderDetailRepository.findAllByUser_usernameAndStartAndEnd(username, startOrderDate, endOrderDate);
-                }
+            if (startOrderDate == null && endOrderDate == null) {
+                orderDetails = orderDetailRepository.findAllByOrder_User_Username(username);
+            } else {
+                orderDetails = orderDetailRepository.findAllByUser_usernameAndStartAndEnd(username, startOrderDate, endOrderDate);
+            }
 
             data = new OrderDetailResponseDto(orderDetails);
 
@@ -159,22 +158,67 @@ public class OrderServiceImplement implements OrderService {
     }
 
     @Override
-    public ResponseDto<OrderCancelResponseDto> cancelOrder(String username, Long orderDetailId) {
+    public ResponseDto<OrderCancelResponseDto> changeOrderStatus(String username, Long orderDetailId, String orderStatus) {
         OrderCancelResponseDto data = null;
         try {
             OrderDetail orderDetail = orderDetailRepository.findById(orderDetailId)
                     .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "orderDetail"));
             if (orderDetail.getOrder().getOrderStatus().equals(OrderStatus.CANCELLED)) {
-                return ResponseDto.setFailed(ResponseMessage.EXIST_DATA + "cancel");
+                return ResponseDto.setFailed(ResponseMessage.EXIST_DATA + "CANCELLED");
             }
-            orderDetail.getOrder().setOrderStatus(OrderStatus.CANCELLED);
+            if (orderDetail.getOrder().getOrderStatus().equals(OrderStatus.SHIPPED) && orderStatus.equals(OrderStatus.CANCELLED.name())) {
+                return ResponseDto.setFailed(ResponseMessage.CAN_NOT_CANCEL);
+            }
+            if (orderDetail.getOrder().getOrderStatus().equals(OrderStatus.RETURN)) {
+                return ResponseDto.setFailed(ResponseMessage.EXIST_DATA + "RETURN");
+            }
+            if (orderDetail.getOrder().getOrderStatus().equals(OrderStatus.EXCHANGE)) {
+                return ResponseDto.setFailed(ResponseMessage.EXIST_DATA + "EXCHANGE");
+            }
+            if (orderDetail.getOrder().getOrderStatus().equals(OrderStatus.SHIPPED) && orderStatus.equals(OrderStatus.EXCHANGE.name())) {
+                return ResponseDto.setFailed(ResponseMessage.CAN_NOT_EXCHANGE);
+            }
+            if (orderDetail.getOrder().getOrderStatus().equals(OrderStatus.SHIPPED) && orderStatus.equals(OrderStatus.RETURN.name())) {
+                return ResponseDto.setFailed(ResponseMessage.CAN_NOT_RETURN);
+            }
+
+            if (orderStatus.equals(OrderStatus.CANCELLED.name()) ||  ChronoUnit.DAYS.between(orderDetail.getOrder().getOrderDate(), LocalDate.now()) > 7) {
+                return ResponseDto.setFailed(ResponseMessage.CAN_NOT_CHANGE_STATUS);
+            }
+
+            orderDetail.getOrder().setOrderStatus(OrderStatus.valueOf(orderStatus));
 
             orderRepository.save(orderDetail.getOrder());
+
             data = new OrderCancelResponseDto(orderDetail);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
         }
+        return ResponseDto.setSuccess(ResponseMessage.SUCCESS, data);
+    }
+
+    @Override
+    public ResponseDto<OrderCancelResponseDto> cancelReturnOrExchange(String username, Long orderDetailId) {
+        OrderCancelResponseDto data = null;
+        try {
+            OrderDetail orderDetail = orderDetailRepository.findById(orderDetailId)
+                    .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "orderDetail"));
+
+            if (orderDetail.getOrder().getOrderStatus().equals(OrderStatus.RETURN) || orderDetail.getOrder().getOrderStatus().equals(OrderStatus.EXCHANGE)) {
+                orderDetail.getOrder().setOrderStatus(OrderStatus.DELIVERED);
+            } else {
+                return ResponseDto.setFailed(ResponseMessage.NOT_RETURN_EXCHANGE);
+            }
+
+            orderRepository.save(orderDetail.getOrder());
+
+            data = new OrderCancelResponseDto(orderDetail);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
+        }
+
         return ResponseDto.setSuccess(ResponseMessage.SUCCESS, data);
     }
 }
