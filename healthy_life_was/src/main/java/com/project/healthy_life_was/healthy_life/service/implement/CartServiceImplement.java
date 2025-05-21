@@ -51,14 +51,14 @@ public class CartServiceImplement implements CartService {
                     .orElseGet(() -> {
                         Cart newCart = Cart.builder().user(user).build();
                         return cartRepository.save(newCart);
-            });
+                    });
 
             Optional<CartItem> existingCartItem = cartItemRepository.findByCartAndProduct(cart,product);
 
             if(existingCartItem.isPresent()){
                 CartItem cartItem = existingCartItem.get();
                 cartItem.setProductQuantity(quantity + cartItem.getProductQuantity());
-                cartItem.setProductPrice(cartItem.getProductQuantity() * cartItem.getProduct().getPPrice());
+                cartItem.setProductPrice(cartItem.getProduct().getPPrice());
                 cartItemRepository.save(cartItem);
                 data = new CartAddResponseDto(cartItem);
                 return ResponseDto.setSuccess(ResponseMessage.SUCCESS, data);
@@ -67,7 +67,7 @@ public class CartServiceImplement implements CartService {
                         .product(product)
                         .cart(cart)
                         .productQuantity(quantity)
-                        .productPrice(product.getPPrice() * quantity)
+                        .productPrice(product.getPPrice())
                         .build();
                 cartItemRepository.save(cartItem);
                 data = new CartAddResponseDto(cartItem);
@@ -81,24 +81,24 @@ public class CartServiceImplement implements CartService {
 
     @Override
     public ResponseDto<CartDetailResponseDto> getCartUser(String username) {
-       try {
-           List<CartItem> cartItems = cartItemRepository.findByCart_User_Username(username);
-           List<CartItemDto> cartItemDto = cartItems.stream()
-                   .map(cart -> new CartItemDto(
-                           cart.getCartItemId(),
-                           cart.getProduct().getPId(),
-                           cart.getProduct().getPName(),
-                           cart.getProductQuantity(),
-                           cart.getProductPrice(),
-                           cart.getProduct().getPImgUrl()
-                   ))
-                   .toList();
-           CartDetailResponseDto cartDetailResponseDto = new CartDetailResponseDto(cartItemDto);
-        return ResponseDto.setSuccess(ResponseMessage.SUCCESS, cartDetailResponseDto);
-       } catch (Exception e) {
-           e.printStackTrace();
-           return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
-       }
+        try {
+            List<CartItem> cartItems = cartItemRepository.findByCart_User_Username(username);
+            List<CartItemDto> cartItemDto = cartItems.stream()
+                    .map(cart -> new CartItemDto(
+                            cart.getCartItemId(),
+                            cart.getProduct().getPId(),
+                            cart.getProduct().getPName(),
+                            cart.getProductQuantity(),
+                            cart.getProductPrice(),
+                            cart.getProduct().getPImgUrl()
+                    ))
+                    .toList();
+            CartDetailResponseDto cartDetailResponseDto = new CartDetailResponseDto(cartItemDto);
+            return ResponseDto.setSuccess(ResponseMessage.SUCCESS, cartDetailResponseDto);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
+        }
     }
     @Override
     public ResponseDto<CartUpdateResponseDto> updateCart(String username, Long cartItemId, CartUpdateQuantityRequestDto dto) {
@@ -106,7 +106,7 @@ public class CartServiceImplement implements CartService {
         int quantity = dto.getProductQuantity();
         try {
             CartItem cartItem = cartItemRepository.findById(cartItemId)
-                   .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "cartItem"));
+                    .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "cartItem"));
 
             if (quantity > cartItem.getProduct().getPStockStatus()) {
                 return ResponseDto.setFailed(ResponseMessage.PURCHASE_INVENTORY);
@@ -115,7 +115,7 @@ public class CartServiceImplement implements CartService {
                 return ResponseDto.setFailed(ResponseMessage.NO_PERMISSION);
             }
             cartItem.setProductQuantity(quantity);
-            cartItem.setProductPrice(quantity*cartItem.getProduct().getPPrice());
+            cartItem.setProductPrice(cartItem.getProduct().getPPrice());
             cartItemRepository.save(cartItem);
             data = new CartUpdateResponseDto(cartItem);
         } catch (Exception e) {
