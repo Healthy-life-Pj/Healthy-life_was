@@ -15,6 +15,7 @@ import com.project.healthy_life_was.healthy_life.entity.user.User;
 import com.project.healthy_life_was.healthy_life.repository.OrderDetailRepository;
 import com.project.healthy_life_was.healthy_life.repository.ReviewRepository;
 import com.project.healthy_life_was.healthy_life.repository.UserRepository;
+import com.project.healthy_life_was.healthy_life.service.ImgService;
 import com.project.healthy_life_was.healthy_life.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,12 +29,20 @@ import java.util.List;
 public class ReviewServiceImplement implements ReviewService {
 
     private final ReviewRepository reviewRepository;
+    private final ImgService imgService;
     private final OrderDetailRepository orderDetailRepository;
     private final UserRepository userRepository;
 
     @Override
     public ResponseDto<ReviewCreateResponseDto> createReview(String username, Long orderDetailId, ReviewCreateRequestDto dto) {
         ReviewCreateResponseDto data = null;
+
+        String reviewImgPath = null;
+
+        if (dto.getReviewImgUrl() != null && !dto.getReviewImgUrl().isEmpty()) {
+            reviewImgPath = imgService.convertImgFile(dto.getReviewImgUrl(), "reviewImg");
+        }
+
         try {
             User user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "user"));
@@ -48,7 +57,7 @@ public class ReviewServiceImplement implements ReviewService {
                     .orderDetail(orderDetail)
                     .reviewRating(dto.getReviewRating())
                     .reviewContent(dto.getReviewContent())
-                    .reviewImgUrl(dto.getReviewImgUrl())
+                    .reviewImgUrl(reviewImgPath)
                     .reviewCreatAt(LocalDate.now())
                     .build();
             if (!orderDetail.getOrder().getOrderStatus().equals(OrderStatus.DELIVERED)) {
@@ -125,7 +134,7 @@ public class ReviewServiceImplement implements ReviewService {
 
     @Override
     public ResponseDto<Boolean> duplicateReview(String username, Long orderDetailId) {
-       try {
+        try {
             boolean result = reviewRepository.existsByUser_usernameAndOrderDetail_orderDetailId(username, orderDetailId);
 
             if (result) {
@@ -133,10 +142,10 @@ public class ReviewServiceImplement implements ReviewService {
             } else {
                 return ResponseDto.setSuccess(ResponseMessage.DUPLICATED_REVIEW, false);
             }
-       } catch (Exception e) {
-           e.printStackTrace();
-           return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
-       }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
+        }
     }
 
     @Override
