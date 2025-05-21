@@ -7,7 +7,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
@@ -19,7 +18,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     FROM products p 
     JOIN product_category_details pcd ON pcd.p_id = p.p_id
     JOIN product_category pc ON pcd.p_category_id = pc.p_category_id
-    WHERE pc.p_category_name = :pCategoryName
+    WHERE pc.p_category_name = :pCategoryName 
 """, nativeQuery = true)
     List<Product> findByPCategoryName(@Param("pCategoryName") String pCategoryName);
 
@@ -27,9 +26,11 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
         SELECT p.*
         FROM products p
         JOIN product_category_details pcd ON p.p_id = pcd.p_id
-        WHERE pcd.p_category_details_name = :pCategoryDetailName
+        JOIN product_category pc ON pcd.p_category_id = pc.p_category_id
+        WHERE pcd.p_category_details_name = :pCategoryDetailName 
+            AND pc.p_category_name = :pCategoryName
     """, nativeQuery = true)
-    List<Product> findByPCategoryDetailsName(@Param("pCategoryDetailName")String pCategoryDetailName);
+    List<Product> findByPCategoryNameAndPCategoryDetailsName(@Param("pCategoryName") String pCategoryName, @Param("pCategoryDetailName")String pCategoryDetailName);
 
     @Query("""
     SELECT p

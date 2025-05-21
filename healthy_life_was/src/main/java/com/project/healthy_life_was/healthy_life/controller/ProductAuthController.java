@@ -40,15 +40,19 @@ public class ProductAuthController {
     }
 
     @GetMapping(PRODUCT_GET_P_CATEGORY_ID)
-    public ResponseEntity<ResponseDto<List<ProductListResponseDto>>>  getCategoryProduct (@RequestParam String pCategoryName) {
+    public ResponseEntity<ResponseDto<List<ProductListResponseDto>>>  getCategoryProduct (
+            @RequestParam String pCategoryName
+    ) {
         ResponseDto<List<ProductListResponseDto>> response = productService.getPCategoryProduct(pCategoryName);
         HttpStatus status = response.isResult() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
         return ResponseEntity.status(status).body(response);
     }
 
     @GetMapping(PRODUCT_GET_CATEGORY_DETAILS)
-    public ResponseEntity<ResponseDto<List<ProductListResponseDto>>>  getCategoryDetailProduct (@RequestParam String pCategoryDetailName) {
-        ResponseDto<List<ProductListResponseDto>> response = productService.getCategoryDetailProduct(pCategoryDetailName);
+    public ResponseEntity<ResponseDto<List<ProductListResponseDto>>>  getCategoryDetailProduct (
+            @RequestParam String pCategoryName,
+            @RequestParam String pCategoryDetailName) {
+        ResponseDto<List<ProductListResponseDto>> response = productService.getCategoryDetailProduct(pCategoryName, pCategoryDetailName);
         HttpStatus status = response.isResult() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
         return ResponseEntity.status(status).body(response);
     }

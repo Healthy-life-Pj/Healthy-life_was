@@ -49,7 +49,7 @@ public class ProductServiceImplement implements ProductService {
         try {
             Optional<Product> optionalProduct = productRepository.findById(pId);
             if (optionalProduct.isEmpty()) {
-               return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_DATA);
+                return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_DATA);
             }
             Product product = optionalProduct.get();
             double averageRating = reviewRepository.findAverageRatingByProductId(product.getPId());
@@ -83,10 +83,10 @@ public class ProductServiceImplement implements ProductService {
     }
 
     @Override
-    public ResponseDto<List<ProductListResponseDto>> getCategoryDetailProduct(String pCategoryDetailName) {
+    public ResponseDto<List<ProductListResponseDto>> getCategoryDetailProduct(String pCategoryName, String pCategoryDetailName) {
         List<ProductListResponseDto> data = null;
         try {
-            List<Product> productList = productRepository.findByPCategoryDetailsName(pCategoryDetailName);
+            List<Product> productList = productRepository.findByPCategoryNameAndPCategoryDetailsName(pCategoryName, pCategoryDetailName);
             data = productList.stream()
                     .map(product -> {
                         ProductCategoryDetail productCategoryDetail = productCategoryDetailRepository.findByPId(product.getPId());
