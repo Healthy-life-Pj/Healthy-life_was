@@ -10,7 +10,7 @@ public interface QnaService {
 
     ResponseDto<QnaResponseDto> createQna(String username, Long pId, QnaRequestDto dto);
 
-    ResponseDto<List<QnaResponseDto>> getQnaAll();
+    ResponseDto<List<QnaResponseDto>> getQnaPid(Long pId);
 
     ResponseDto<List<QnaResponseDto>> getQnaUser(String username);
 
