@@ -47,4 +47,9 @@ public class ResponseMessage {
     public static final String NOT_EXIST_SHIPPING = "Not exist shipping";;
     public static final String INVALID_METHOD = "Invalid method";;
     public static final String ALREADY_EXIST_SHIPPING = "Shipping is already exist";
+    public static final String CAN_NOT_CANCEL = "This order cannot be canceled";
+    public static final String CAN_NOT_EXCHANGE = "Exchange is not available during shipping.";
+    public static final String CAN_NOT_RETURN = "Return is not available during shipping.";
+    public static final String CAN_NOT_CHANGE_STATUS = "Only products purchased within 7 days can have their order status changed.";
+    public static final String NOT_RETURN_EXCHANGE = "The return and Exchange are not available during shipping";
 }
