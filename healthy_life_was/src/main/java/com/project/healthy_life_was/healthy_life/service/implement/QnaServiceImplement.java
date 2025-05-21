@@ -29,35 +29,35 @@ public class QnaServiceImplement implements QnaService {
     public ResponseDto<QnaResponseDto> createQna(String username, Long pId, QnaRequestDto dto) {
         QnaResponseDto data = null;
 
-       String qnaTitle = dto.getQnaTitle();
-       String qnaContent = dto.getQnaContent();
+        String qnaTitle = dto.getQnaTitle();
+        String qnaContent = dto.getQnaContent();
 
-       try {
-           User user = userRepository.findByUsername(username)
-                   .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "user"));
-           Product product = productRepository.findById(pId)
-                   .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "product"));
-           Qna qna = Qna.builder()
-                   .product(product)
-                   .user(user)
-                   .qnaTitle(qnaTitle)
-                   .qnaContent(qnaContent)
-                   .build();
-           qnaRepository.save(qna);
+        try {
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "user"));
+            Product product = productRepository.findById(pId)
+                    .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "product"));
+            Qna qna = Qna.builder()
+                    .product(product)
+                    .user(user)
+                    .qnaTitle(qnaTitle)
+                    .qnaContent(qnaContent)
+                    .build();
+            qnaRepository.save(qna);
 
-           data = new QnaResponseDto(qna);
-       } catch (Exception e) {
-           e.printStackTrace();
-           return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
-       }
-       return ResponseDto.setSuccess(ResponseMessage.SUCCESS, data);
+            data = new QnaResponseDto(qna);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
+        }
+        return ResponseDto.setSuccess(ResponseMessage.SUCCESS, data);
     }
 
     @Override
-    public ResponseDto<List<QnaResponseDto>> getQnaAll() {
+    public ResponseDto<List<QnaResponseDto>> getQnaPid(Long pId) {
         List<QnaResponseDto> data = null;
         try{
-            List<Qna> qna = qnaRepository.findAll();
+            List<Qna> qna = qnaRepository.findByProduct_pId(pId);
             data = qna.stream()
                     .map(QnaResponseDto::new)
                     .toList();
@@ -107,7 +107,7 @@ public class QnaServiceImplement implements QnaService {
             e.printStackTrace();
             return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
         }
-            return ResponseDto.setSuccess(ResponseMessage.SUCCESS, data);
+        return ResponseDto.setSuccess(ResponseMessage.SUCCESS, data);
     }
 
     @Override

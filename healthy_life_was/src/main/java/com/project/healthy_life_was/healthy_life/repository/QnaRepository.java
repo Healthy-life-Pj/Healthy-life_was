@@ -13,11 +13,9 @@ public interface QnaRepository extends JpaRepository<Qna, Long> {
 
     List<Qna> findAll ();
 
-    @Query("SELECT q FROM Qna q WHERE q.user.username = :username AND q.product.pId = :pId")
-    List<Qna> findByUserAndProduct(@Param("username") String username, @Param("pId") Long pId);
-
     List<Qna> findByUser_Username (String username);
 
     Qna findByUser_UsernameAndQnaId (String username, Long qnaId);
 
+    List<Qna> findByProduct_pId(Long pId);
 }

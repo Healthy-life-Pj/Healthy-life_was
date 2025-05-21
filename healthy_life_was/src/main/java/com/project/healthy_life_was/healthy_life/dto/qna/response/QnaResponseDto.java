@@ -14,6 +14,7 @@ public class QnaResponseDto {
     private String username;
     private String qnaTitle;
     private String qnaContent;
+    private String qnaAnswer;
 
     public QnaResponseDto(Qna qna) {
         this.qnaId = qna.getQnaId();
@@ -21,5 +22,6 @@ public class QnaResponseDto {
         this.username = qna.getUser().getUsername();
         this.qnaTitle = qna.getQnaTitle();
         this.qnaContent = qna.getQnaContent();
+        this.qnaAnswer = qna.getQnaAnswer();
     }
 }

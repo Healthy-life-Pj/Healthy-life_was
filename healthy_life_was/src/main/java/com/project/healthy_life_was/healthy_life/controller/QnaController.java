@@ -22,6 +22,7 @@ public class QnaController {
     private final QnaService qnaService;
 
     private final String QNA_POST = "/create/{pId}";
+
     private final String QNA_GET_USER = "/me";
     private final String QNA_PUT_USER = "/update/{qnaId}";
     private final String QNA_DELETE = "/{qnaId}";
@@ -41,17 +42,10 @@ public class QnaController {
         return ResponseEntity.status(status).body(response);
     }
 
-    @GetMapping
-    public ResponseEntity<ResponseDto<List<QnaResponseDto>>> getQnaAll () {
-        ResponseDto<List<QnaResponseDto>> response = qnaService.getQnaAll();
-        HttpStatus status = response.isResult() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
-        return ResponseEntity.status(status).body(response);
-    }
-
     @GetMapping(QNA_GET_USER)
     public ResponseEntity<ResponseDto<List<QnaResponseDto>>> getQnaUser (
             @AuthenticationPrincipal UserDetails userDetails
-            ) {
+    ) {
         if (userDetails == null) {
             ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
