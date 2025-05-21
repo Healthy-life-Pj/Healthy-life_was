@@ -13,7 +13,7 @@ public interface ProductService {
 
     ResponseDto<List<ProductListResponseDto>> getPCategoryProduct(String pCategoryName);
 
-    ResponseDto<List<ProductListResponseDto>> getCategoryDetailProduct(String pCategoryDetailName);
+    ResponseDto<List<ProductListResponseDto>> getCategoryDetailProduct(String pCategoryName, String pCategoryDetailName);
 
     ResponseDto<List<ProductListResponseDto>> getPNameProduct(String pName);
 
