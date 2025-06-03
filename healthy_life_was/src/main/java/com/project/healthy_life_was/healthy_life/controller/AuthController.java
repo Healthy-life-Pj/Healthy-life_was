@@ -26,8 +26,8 @@ public class AuthController {
 
     private final String LOGIN = "/login";
     private final String SIGN_UP = "/sign-up";
-    private final String DUPLICATE_USERNAME = "/duplicate/{username}";
-    private final String DUPLICATE_USER_NICKNAME = "/duplicate/{userNickName}";
+    private final String DUPLICATE_USERNAME = "/duplicate/username/{username}";
+    private final String DUPLICATE_USER_NICKNAME = "/duplicate/userNickName/{userNickName}";
     private final String SNS_LOGIN = "/sns-login";
     private final String SNS_SIGN_UP = "/sns-sign-up";
     private final String RECOVERY_EMAIL = "/recovery-email";
@@ -47,14 +47,14 @@ public class AuthController {
     }
 
     @GetMapping(DUPLICATE_USERNAME)
-    public ResponseEntity<ResponseDto<Boolean>> duplicateUserName (@Valid @PathVariable String username) {
+    public ResponseEntity<ResponseDto<Boolean>> duplicateUserName (@PathVariable String username) {
         ResponseDto<Boolean> response = authService.duplicateUserName(username);
         HttpStatus status = response.isResult() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
         return ResponseEntity.status(status).body(response);
     }
 
     @GetMapping(DUPLICATE_USER_NICKNAME)
-    public ResponseEntity<ResponseDto<Boolean>> duplicateUserNickName (@Valid @PathVariable String userNickName) {
+    public ResponseEntity<ResponseDto<Boolean>> duplicateUserNickName (@PathVariable String userNickName) {
         ResponseDto<Boolean> response = authService.duplicateUserNickName(userNickName);
         HttpStatus status = response.isResult() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
         return ResponseEntity.status(status).body(response);
