@@ -19,7 +19,7 @@ public class MailController {
     private final MailService MailService;
 
     private final String FIND_ID_SEND_MAIL = "/find-id";
-    private final String FIND_ID_BY_TOKEN = "/find-id";
+    private final String FIND_ID_BY_TOKEN = "/find-id/verify-find-username";
 
     @PostMapping(FIND_ID_SEND_MAIL)
     public ResponseEntity<ResponseDto<String>> sendEmail(@RequestBody FindIdRequestDto dto) throws MessagingException {

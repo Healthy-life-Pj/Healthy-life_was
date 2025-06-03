@@ -31,16 +31,13 @@ public class MailService {
         MimeMessage message = javaMailSender.createMimeMessage();
         message.setFrom(senderEmail);
         message.setRecipients(MimeMessage.RecipientType.TO, email);
+        message.setSubject("HealthyLife 아이디 이메일 인증");
 
-        String subject;
-        String body;
-
-        subject = "HealthyLife 이메일 인증 링크";
+        String body = "";
         body = "<h3> HealthyLife 이메일 인증 링크입니다.</h3>";
-        body += "<a href=\"http://localhost:3000/find-id?token=" + token + "\"> 해당 링크를 클릭하여 인증을 완료해 주세요.</a>";
+        body += "<a href=\"http://localhost:3000/find-id/verify-find-username?token=" + token + "\"> 해당 링크를 클릭하여 인증을 완료해 주세요.</a>";
         body += "<p>감사합니다.</p>";
 
-        message.setSubject(subject);
         message.setText(body, "UTF-8", "html");
         return message;
     }

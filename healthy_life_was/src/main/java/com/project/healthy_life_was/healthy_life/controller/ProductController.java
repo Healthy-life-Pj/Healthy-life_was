@@ -20,7 +20,7 @@ public class ProductController {
 
     private final ProductService productService;
 
-    private final String PRODUCT_GET_PHYSIQUE_ID = "/physique";
+    private final String PRODUCT_GET_PHYSIQUE_ID = "/physiques";
 
     @GetMapping(PRODUCT_GET_PHYSIQUE_ID)
     public ResponseEntity<ResponseDto<List<ProductListResponseDto>>> getPhysiqueProduct (@AuthenticationPrincipal UserDetails userDetails) {
