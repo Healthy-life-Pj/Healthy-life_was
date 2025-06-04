@@ -59,4 +59,16 @@ public class LoginResponseDto {
                 .collect(Collectors.toList());
     }
 
+    public LoginResponseDto(User user, String token, int exprTime) {
+        this.userId = user.getUserId();
+        this.username = user.getUsername();
+        this.userNickName = user.getUserNickName();
+        this.userBirth = user.getUserBirth();
+        this.userGender = user.getUserGender();
+        this.userEmail = user.getUserEmail();
+        this.userPhone = user.getUserPhone();
+        this.userMemberGrade = user.getUserMemberGrade();
+        this.token = token;
+        this.exprTime = exprTime;
+    }
 }

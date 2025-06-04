@@ -7,8 +7,8 @@ import com.project.healthy_life_was.healthy_life.dto.auth.request.SignUpRequestD
 import com.project.healthy_life_was.healthy_life.dto.auth.response.FindInfoResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.auth.response.LoginResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.auth.response.SignUpResponseDto;
+import com.project.healthy_life_was.healthy_life.entity.user.User;
 import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 import jakarta.validation.Valid;
 
 public interface AuthService {
@@ -21,4 +21,6 @@ public interface AuthService {
     ResponseDto<Boolean> duplicateUserNickName(@Valid String userNickName);
 
     ResponseDto<FindInfoResponseDto> recoveryEmail(FindInfoRequestDto dto) throws MessagingException;
+
+    ResponseDto<LoginResponseDto> oauthLogin(String email, String name, String snsId, String joinPath);
 }

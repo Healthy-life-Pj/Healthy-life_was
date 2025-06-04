@@ -250,4 +250,57 @@ public class AuthServiceImplement implements AuthService {
             return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
         }
     }
+
+    @Override
+    public ResponseDto<LoginResponseDto> oauthLogin(String email, String name, String snsId, String provider) {
+        try {
+            Optional<User> existingUser = authRepository.findBySnsIdAndJoinPath(snsId, provider);
+
+            User user;
+            if (existingUser.isPresent()) {
+                user = existingUser.get();
+            } else {
+                user = createOAuthUser(email, name, snsId, provider);
+            }
+
+            String token = jwtProvider.generateJwtToken(user.getUsername());
+            int exprTime = jwtProvider.getExpiration();
+
+            List<DeliverAddress> deliverAddressList = deliverAddressRepository.findByUser_UserId(user.getUserId());
+            List<DeliverAddressDto> deliverAddressDtoList = deliverAddressList.stream()
+                    .map(address -> new DeliverAddressDto(address.getAddress(), address.getAddressDetail(), address.getPostNum()))
+                    .collect(Collectors.toList());
+
+            LoginResponseDto data = new LoginResponseDto(user, deliverAddressDtoList, token, exprTime);
+            return ResponseDto.setSuccess(ResponseMessage.SUCCESS, data);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseDto.setFailed(ResponseMessage.SIGN_IN_FAIL);
+        }
+    }
+
+    private User createOAuthUser(String email, String name, String snsId, String provider) {
+        String username = provider.toLowerCase() + "_" + email.split("@")[0] + "_" + System.currentTimeMillis();
+        String defaultPassword = bCryptpasswordEncoder.encode("OAUTH_" + snsId);
+
+        WishList wishList = new WishList();
+        User user = User.builder()
+                .username(username)
+                .password(defaultPassword)
+                .name(name)
+                .userNickName(name + "_" + (int)(Math.random() * 10000))
+                .userEmail(email)
+                .userGender(Gender.M)
+                .userBirth(new Date())
+                .userPhone("010-0000-0000")
+                .joinPath(provider)
+                .snsId(snsId)
+                .wishList(new WishList())
+                .build();
+
+        wishList.setUser(user);
+        user.setWishList(wishList);
+        return authRepository.save(user);
+    }
 }

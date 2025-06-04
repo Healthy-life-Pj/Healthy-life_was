@@ -1,10 +1,10 @@
 package com.project.healthy_life_was.healthy_life.controller;
 
-
 import com.project.healthy_life_was.healthy_life.common.constant.ApiMappingPattern;
 import com.project.healthy_life_was.healthy_life.dto.ResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.auth.request.FindInfoRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.auth.request.LoginRequestDto;
+import com.project.healthy_life_was.healthy_life.dto.auth.request.OAuth2LoginRequest;
 import com.project.healthy_life_was.healthy_life.dto.auth.request.SignUpRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.auth.response.FindInfoResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.auth.response.LoginResponseDto;
@@ -15,6 +15,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -67,5 +69,33 @@ public class AuthController {
         ResponseDto<FindInfoResponseDto> response = authService.recoveryEmail(dto);
         HttpStatus status = response.isResult() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
         return ResponseEntity.status(status).body(response);
+    }
+
+    @PostMapping("/oauth/{provider}")
+    public ResponseEntity<ResponseDto<LoginResponseDto>> oauthLogin(
+            @PathVariable String provider,
+            @RequestBody OAuth2LoginRequest request) {
+
+        // provider 검증
+        if (!isValidProvider(provider)) {
+            ResponseDto<LoginResponseDto> response = ResponseDto.setFailed("지원하지 않는 OAuth 제공업체입니다: " + provider);
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        ResponseDto<LoginResponseDto> response = authService.oauthLogin(
+                request.getEmail(),
+                request.getName(),
+                request.getSnsId(),
+                provider.toUpperCase()
+        );
+
+        HttpStatus status = response.isResult() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
+        return ResponseEntity.status(status).body(response);
+    }
+
+    private boolean isValidProvider(String provider) {
+        return provider.equalsIgnoreCase("google") ||
+                provider.equalsIgnoreCase("kakao") ||
+                provider.equalsIgnoreCase("naver");
     }
 }
