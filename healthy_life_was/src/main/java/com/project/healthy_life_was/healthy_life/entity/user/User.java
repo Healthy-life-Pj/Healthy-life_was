@@ -58,7 +58,7 @@ public class User {
     @Column(nullable = false)
     private MemberShip userMemberGrade = MemberShip.병아리;
 
-    @Column(nullable = false, length = 5, columnDefinition = "VARCHAR(5) COMMENT '가입 경로 (HOME, KAKAO, NAVER)'")
+    @Column(nullable = false, length = 6)
     private String joinPath;
 
     @PrePersist
@@ -68,7 +68,7 @@ public class User {
         }
     }
 
-    @Column(nullable = true, columnDefinition = "VARCHAR(255) COMMENT 'OAuth2 사용자 아이디'")
+    @Column(nullable = true)
     private String snsId;
 
     @Builder.Default
