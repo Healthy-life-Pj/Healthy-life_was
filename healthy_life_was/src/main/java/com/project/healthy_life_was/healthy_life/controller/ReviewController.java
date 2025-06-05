@@ -35,7 +35,7 @@ public class ReviewController {
     public ResponseEntity<ResponseDto<ReviewCreateResponseDto>> createReview (
             @AuthenticationPrincipal UserDetails  userDetails,
             @PathVariable Long orderDetailId,
-            @RequestBody ReviewCreateRequestDto dto
+            @ModelAttribute ReviewCreateRequestDto dto
             ) {
         if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -61,7 +61,7 @@ public class ReviewController {
     public ResponseEntity<ResponseDto<ReviewUpdateResponseDto>> updateReview (
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable Long reviewId,
-            @RequestBody ReviewUpdateRequestDto dto
+            @ModelAttribute ReviewUpdateRequestDto dto
     ) {
         if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();

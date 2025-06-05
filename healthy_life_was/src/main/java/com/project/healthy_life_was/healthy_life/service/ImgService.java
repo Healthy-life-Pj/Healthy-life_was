@@ -13,11 +13,12 @@ import java.util.UUID;
 
 @Service
 public class ImgService {
-    @Value("${file.upload-dir}")
+    @Value("${user.dir}")
     private String projectPath;
 
     public String convertImgFile(MultipartFile file, String subPath) {
         String originalFilename = file.getOriginalFilename();
+
         if (originalFilename == null || originalFilename.isEmpty()) {
             throw new IllegalArgumentException("Invalid file: file name is missing");
         }
@@ -28,7 +29,7 @@ public class ImgService {
         String filePath = subPath + "/" + newImgName;
         File f = new File(rootPath + subPath);
 
-        if (!f.exists() && !f.mkdirs()) {
+        if (!f.exists()) {
             throw new RuntimeException("Failed to create directory: " + f.getAbsolutePath());
         }
 
@@ -39,7 +40,9 @@ public class ImgService {
         } catch (IOException e) {
             throw new RuntimeException("Failed to save file: " + e.getMessage(), e);
         }
+
         System.out.println("Saving file to: " + uploadPath.toString());
         return filePath;
     }
+
 }

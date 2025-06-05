@@ -14,6 +14,8 @@ public class ReviewListDto {
     private Long reviewId;
     @JsonProperty("pName")
     private String pName;
+    @JsonProperty("pId")
+    private Long pId;
     private String pImgUrl;
     private String username;
     private Double reviewRating;

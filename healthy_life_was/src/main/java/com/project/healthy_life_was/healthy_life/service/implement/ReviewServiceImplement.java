@@ -82,6 +82,7 @@ public class ReviewServiceImplement implements ReviewService {
                     .map(review -> new ReviewListDto(
                             review.getReviewId(),
                             review.getOrderDetail().getProduct().getPName(),
+                            review.getOrderDetail().getProduct().getPId(),
                             review.getOrderDetail().getProduct().getPImgUrl(),
                             review.getUser().getUsername(),
                             review.getReviewRating(),
@@ -158,6 +159,7 @@ public class ReviewServiceImplement implements ReviewService {
                     .map(review -> new ReviewListDto(
                             review.getReviewId(),
                             review.getOrderDetail().getProduct().getPName(),
+                            review.getOrderDetail().getProduct().getPId(),
                             review.getOrderDetail().getProduct().getPImgUrl(),
                             review.getUser().getUsername(),
                             review.getReviewRating(),
@@ -183,6 +185,7 @@ public class ReviewServiceImplement implements ReviewService {
                     .map(review -> new ReviewListDto(
                             review.getReviewId(),
                             review.getOrderDetail().getProduct().getPName(),
+                            review.getOrderDetail().getProduct().getPId(),
                             review.getOrderDetail().getProduct().getPImgUrl(),
                             review.getUser().getUsername(),
                             review.getReviewRating(),
