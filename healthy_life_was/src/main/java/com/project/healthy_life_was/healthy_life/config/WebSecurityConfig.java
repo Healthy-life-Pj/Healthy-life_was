@@ -70,7 +70,7 @@ public class WebSecurityConfig {
                                 new AntPathRequestMatcher("/upload/**"),
                                 new AntPathRequestMatcher("/file/**"),
                                 new AntPathRequestMatcher("/oauth2/callback/**"),
-                                new AntPathRequestMatcher("/api/v1/mail/**")
+                                new AntPathRequestMatcher("/image/**")
                         )
                         .permitAll()
                         .anyRequest().authenticated())
