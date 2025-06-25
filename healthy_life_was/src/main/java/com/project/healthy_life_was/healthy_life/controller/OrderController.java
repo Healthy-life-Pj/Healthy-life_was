@@ -4,11 +4,7 @@ import com.project.healthy_life_was.healthy_life.common.constant.ApiMappingPatte
 import com.project.healthy_life_was.healthy_life.dto.ResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.order.request.CartOrderRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.order.request.DirectOrderRequestDto;
-import com.project.healthy_life_was.healthy_life.dto.order.request.OrderGetRequestDto;
-import com.project.healthy_life_was.healthy_life.dto.order.response.CartOrderResponseDto;
-import com.project.healthy_life_was.healthy_life.dto.order.response.DirectOrderResponseDto;
-import com.project.healthy_life_was.healthy_life.dto.order.response.OrderCancelResponseDto;
-import com.project.healthy_life_was.healthy_life.dto.order.response.OrderDetailResponseDto;
+import com.project.healthy_life_was.healthy_life.dto.order.response.*;
 import com.project.healthy_life_was.healthy_life.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -26,10 +22,11 @@ import java.time.LocalDate;
 public class OrderController {
 
     private final OrderService orderService;
-    private final String ORDER_POST_CART = "carts";
+    private final String ORDER_POST_CART = "/carts";
     private final String ORDER_POST_DIRECT = "/{pId}";
     private final String ORDER_PUT = "/{orderDetailId}";
     private final String ORDER_PUT_CANCEL = "/cancel/{orderDetailId}";
+    private final String ORDER_GET_REVIEW = "/review-writable";
 
     @PostMapping(ORDER_POST_DIRECT)
     public ResponseEntity<ResponseDto<DirectOrderResponseDto>> directOrder (
@@ -61,7 +58,7 @@ public class OrderController {
     }
 
     @GetMapping
-    public ResponseEntity<ResponseDto<OrderDetailResponseDto>> getOrder (
+    public ResponseEntity<ResponseDto<OrderListResponseDto>> getOrder (
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startOrderDate,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endOrderDate
@@ -70,7 +67,7 @@ public class OrderController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         String username = userDetails.getUsername();
-        ResponseDto<OrderDetailResponseDto> response = orderService.getOrder(username, startOrderDate, endOrderDate);
+        ResponseDto<OrderListResponseDto> response = orderService.getOrder(username, startOrderDate, endOrderDate);
         HttpStatus status = response.isResult() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
         return ResponseEntity.status(status).body(response);
     }
@@ -100,6 +97,19 @@ public class OrderController {
         }
         String username = userDetails.getUsername();
         ResponseDto<OrderCancelResponseDto> response = orderService.cancelReturnOrExchange(username, orderDetailId);
+        HttpStatus status = response.isResult() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
+        return ResponseEntity.status(status).body(response);
+    }
+
+    @GetMapping(ORDER_GET_REVIEW)
+    public ResponseEntity<ResponseDto<OrderListResponseDto>> orderGetReview (
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        String username = userDetails.getUsername();
+        ResponseDto<OrderListResponseDto> response = orderService.orderGetReview(username);
         HttpStatus status = response.isResult() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
         return ResponseEntity.status(status).body(response);
     }

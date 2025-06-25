@@ -6,6 +6,7 @@ import com.project.healthy_life_was.healthy_life.dto.review.request.ReviewCreate
 import com.project.healthy_life_was.healthy_life.dto.review.request.ReviewUpdateRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.review.response.ProductReviewListResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.review.response.ReviewCreateResponseDto;
+import com.project.healthy_life_was.healthy_life.dto.review.response.ReviewResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.review.response.ReviewUpdateResponseDto;
 import com.project.healthy_life_was.healthy_life.service.ReviewService;
 import lombok.RequiredArgsConstructor;
@@ -27,9 +28,10 @@ public class ReviewController {
 
     private final String REVIEW_POST = "/{orderDetailId}";
     private final String REVIEW_MINE = "/me";
-    private final String REVIEW_PUT = "/{reviewId}";
-    private final String REVIEW_DELETE = "/{reviewId}";
+    private final String REVIEW_PUT = "/update/{reviewId}";
+    private final String REVIEW_DELETE = "/delete/{reviewId}";
     private final String REVIEW_EXISTS = "/{orderDetailId}/duplication";
+    private final String REVIEW_GET = "/get-one/{reviewId}";
 
     @PostMapping(REVIEW_POST)
     public ResponseEntity<ResponseDto<ReviewCreateResponseDto>> createReview (
@@ -96,6 +98,19 @@ public class ReviewController {
         }
         String username = userDetails.getUsername();
         ResponseDto<Boolean> response = reviewService.duplicateReview(username, orderDetailId);
+        HttpStatus status = response.isResult() ? HttpStatus.OK: HttpStatus.BAD_REQUEST;
+        return ResponseEntity.status(status).body(response);
+    }
+
+    @GetMapping(REVIEW_GET)
+    public ResponseEntity<ResponseDto<ReviewResponseDto>> getOneReview (
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long reviewId) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        String username = userDetails.getUsername();
+        ResponseDto<ReviewResponseDto> response = reviewService.getOneReview(username, reviewId);
         HttpStatus status = response.isResult() ? HttpStatus.OK: HttpStatus.BAD_REQUEST;
         return ResponseEntity.status(status).body(response);
     }

@@ -11,7 +11,7 @@ import java.time.LocalDate;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ReviewUpdateResponseDto {
+public class ReviewResponseDto {
 
     private Long reviewId;
     @JsonProperty("pName")
@@ -22,7 +22,7 @@ public class ReviewUpdateResponseDto {
     private String reviewImgUrl;
     private LocalDate reviewCreatAt;
 
-    public ReviewUpdateResponseDto(Review review) {
+    public ReviewResponseDto(Review review) {
         this.reviewId = review.getReviewId();
         this.pName = review.getOrderDetail().getProduct().getPName();
         this.reviewRating = review.getReviewRating();

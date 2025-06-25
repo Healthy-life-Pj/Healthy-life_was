@@ -22,4 +22,5 @@ public class ReviewListDto {
     private String reviewContent;
     private String reviewImgUrl;
     private LocalDate reviewCreatAt;
+    private LocalDate orderDate;
 }

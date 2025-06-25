@@ -4,11 +4,7 @@ import com.project.healthy_life_was.healthy_life.common.constant.ResponseMessage
 import com.project.healthy_life_was.healthy_life.dto.ResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.order.request.CartOrderRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.order.request.DirectOrderRequestDto;
-import com.project.healthy_life_was.healthy_life.dto.order.request.OrderGetRequestDto;
-import com.project.healthy_life_was.healthy_life.dto.order.response.CartOrderResponseDto;
-import com.project.healthy_life_was.healthy_life.dto.order.response.DirectOrderResponseDto;
-import com.project.healthy_life_was.healthy_life.dto.order.response.OrderCancelResponseDto;
-import com.project.healthy_life_was.healthy_life.dto.order.response.OrderDetailResponseDto;
+import com.project.healthy_life_was.healthy_life.dto.order.response.*;
 import com.project.healthy_life_was.healthy_life.entity.cart.Cart;
 import com.project.healthy_life_was.healthy_life.entity.cart.CartItem;
 import com.project.healthy_life_was.healthy_life.entity.order.Order;
@@ -26,6 +22,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -136,19 +133,25 @@ public class OrderServiceImplement implements OrderService {
     }
 
     @Override
-    public ResponseDto<OrderDetailResponseDto> getOrder(String username, LocalDate startOrderDate, LocalDate endOrderDate) {
-        OrderDetailResponseDto data = null;
+    public ResponseDto<OrderListResponseDto> getOrder(String username, LocalDate startOrderDate, LocalDate endOrderDate) {
+        OrderListResponseDto data = null;
 
         try {
-            List<OrderDetail> orderDetails;
+            List<Order> orders;
 
             if (startOrderDate == null && endOrderDate == null) {
-                orderDetails = orderDetailRepository.findAllByOrder_User_Username(username);
+                orders = orderRepository.findAllByUser_Username(username);
             } else {
-                orderDetails = orderDetailRepository.findAllByUser_usernameAndStartAndEnd(username, startOrderDate, endOrderDate);
+                orders = orderRepository.findAllByUser_usernameAndStartAndEnd(username, startOrderDate, endOrderDate);
             }
 
-            data = new OrderDetailResponseDto(orderDetails);
+            List<OrderResponseDto> dtos = orders.stream()
+                    .map(OrderResponseDto::new)
+                    .collect(Collectors.toList());
+
+
+
+            data = new OrderListResponseDto(dtos);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -221,4 +224,24 @@ public class OrderServiceImplement implements OrderService {
 
         return ResponseDto.setSuccess(ResponseMessage.SUCCESS, data);
     }
+
+    @Override
+    public ResponseDto<OrderListResponseDto> orderGetReview(String username) {
+
+        try {
+            List<Order> orders = orderRepository.findDeliveredOrdersWithoutReview(username);
+
+            List<OrderResponseDto> dtos = orders.stream()
+                    .map(OrderResponseDto::new)
+                    .collect(Collectors.toList());
+
+            OrderListResponseDto responseDto = new OrderListResponseDto(dtos);
+
+            return ResponseDto.setSuccess(ResponseMessage.SUCCESS, responseDto);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
+        }
+    }
+
 }

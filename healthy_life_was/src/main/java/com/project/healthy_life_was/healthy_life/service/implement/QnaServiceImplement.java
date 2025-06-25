@@ -98,9 +98,12 @@ public class QnaServiceImplement implements QnaService {
                 return ResponseDto.setFailed(ResponseMessage.NO_PERMISSION);
             }
 
-            qna.setQnaTitle(dto.getQnaTitle());
-            qna.setQnaContent(dto.getQnaContent());
+            if (qna.getQnaAnswer() != null && !qna.getQnaAnswer().isEmpty()) {
+                return ResponseDto.setFailed(ResponseMessage.CAN_NOT_UPDATE_CONTENT);
+            }
 
+                qna.setQnaTitle(dto.getQnaTitle());
+                qna.setQnaContent(dto.getQnaContent());
             qnaRepository.save(qna);
             data = new QnaResponseDto(qna);
         } catch (Exception e) {

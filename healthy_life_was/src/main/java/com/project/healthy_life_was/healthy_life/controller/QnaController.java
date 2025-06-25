@@ -22,10 +22,9 @@ public class QnaController {
     private final QnaService qnaService;
 
     private final String QNA_POST = "/create/{pId}";
-
     private final String QNA_GET_USER = "/me";
-    private final String QNA_PUT_USER = "/update/{qnaId}";
-    private final String QNA_DELETE = "/{qnaId}";
+    private final String QNA_PUT_USER = "/update-qna/{qnaId}";
+    private final String QNA_DELETE = "/delete-qna/{qnaId}";
 
     @PostMapping(QNA_POST)
     public ResponseEntity<ResponseDto<QnaResponseDto>> creatQna (
