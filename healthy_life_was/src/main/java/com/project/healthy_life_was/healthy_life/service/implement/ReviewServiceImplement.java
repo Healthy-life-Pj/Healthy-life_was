@@ -24,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -62,7 +64,7 @@ public class ReviewServiceImplement implements ReviewService {
                     .reviewImgUrl(reviewImgPath)
                     .reviewCreatAt(LocalDate.now())
                     .build();
-            if (!orderDetail.getOrder().getOrderStatus().equals(OrderStatus.DELIVERED)) {
+            if (!orderDetail.getOrderStatus().equals(OrderStatus.DELIVERED)) {
                 return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_DATA);
             }
             reviewRepository.save(review);
@@ -81,6 +83,7 @@ public class ReviewServiceImplement implements ReviewService {
         try {
             List<Review> reviews = reviewRepository.findByUser_Username(username);
             List<ReviewListDto> reviewList = reviews.stream()
+                    .sorted(Comparator.comparing(Review::getReviewCreatAt).reversed())
                     .map(review -> new ReviewListDto(
                             review.getReviewId(),
                             review.getOrderDetail().getProduct().getPName(),
@@ -164,6 +167,7 @@ public class ReviewServiceImplement implements ReviewService {
         try {
             List<Review> reviews = reviewRepository.findAll();
             List<ReviewListDto> reviewList = reviews.stream()
+                    .sorted(Comparator.comparing(Review::getReviewCreatAt).reversed())
                     .map(review -> new ReviewListDto(
                             review.getReviewId(),
                             review.getOrderDetail().getProduct().getPName(),
@@ -191,6 +195,7 @@ public class ReviewServiceImplement implements ReviewService {
         try {
             List<Review> reviews = reviewRepository.findByOrderDetail_Product_pId(pId);
             List<ReviewListDto> reviewList = reviews.stream()
+                    .sorted(Comparator.comparing(Review::getReviewCreatAt).reversed())
                     .map(review -> new ReviewListDto(
                             review.getReviewId(),
                             review.getOrderDetail().getProduct().getPName(),

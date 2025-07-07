@@ -1,6 +1,7 @@
 package com.project.healthy_life_was.healthy_life.entity.order;
 
 import com.project.healthy_life_was.healthy_life.entity.cart.Cart;
+import com.project.healthy_life_was.healthy_life.entity.deliverAddress.DeliverAddress;
 import com.project.healthy_life_was.healthy_life.entity.user.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -26,16 +27,22 @@ public class Order {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Column(name = "order_recipient_name", nullable = false)
+    private String orderRecipientName;
+
+    @Column(name = "order_recipient_phone", nullable = false)
+    private String orderRecipientPhone;
+
     @ManyToOne
     @JoinColumn(name = "cart_id", nullable = true)
     private Cart cart;
 
+    @ManyToOne
+    @JoinColumn(name = "address_deliver_id", nullable = false)
+    private DeliverAddress deliverAddress;
+
     @Column(name = "order_date", nullable = false)
     private LocalDate orderDate;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "order_status", nullable = false)
-    private OrderStatus orderStatus;
 
     @Column(name = "order_total_amount", nullable = false)
     private int orderTotalAmount;
@@ -49,5 +56,7 @@ public class Order {
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderDetail> orderDetails;
+
+
 
 }

@@ -28,7 +28,7 @@ public class OrderCancelResponseDto {
         this.username = orderDetail.getOrder().getUser().getUsername();
         this.totalAmount = orderDetail.getOrder().getOrderTotalAmount();
         this.shippingRequest = orderDetail.getOrder().getShippingRequest();
-        this.orderStatus = String.valueOf(orderDetail.getOrder().getOrderStatus());
+        this.orderStatus = String.valueOf(orderDetail.getOrderStatus());
         this.orderDate =orderDetail.getOrder().getOrderDate();
         this.orderDetailId = orderDetail.getOrderDetailId();
         this.pId = orderDetail.getProduct().getPId();

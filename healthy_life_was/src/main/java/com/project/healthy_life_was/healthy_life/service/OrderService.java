@@ -8,9 +8,9 @@ import com.project.healthy_life_was.healthy_life.dto.order.response.*;
 import java.time.LocalDate;
 
 public interface OrderService {
-    ResponseDto<CartOrderResponseDto> cartOrder(String username, CartOrderRequestDto dto);
+    ResponseDto<PostOrderResponseDto> cartOrder(String username, CartOrderRequestDto dto);
 
-    ResponseDto<DirectOrderResponseDto> directOrder(String username, Long pId, DirectOrderRequestDto dto);
+    ResponseDto<PostOrderResponseDto> directOrder(String username, Long pId, DirectOrderRequestDto dto);
 
     ResponseDto<OrderListResponseDto> getOrder(String username, LocalDate startOrderDate, LocalDate endOrderDate);
 

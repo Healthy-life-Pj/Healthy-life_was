@@ -6,6 +6,7 @@ import com.project.healthy_life_was.healthy_life.dto.order.request.CartOrderRequ
 import com.project.healthy_life_was.healthy_life.dto.order.request.DirectOrderRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.order.response.*;
 import com.project.healthy_life_was.healthy_life.service.OrderService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -29,30 +30,30 @@ public class OrderController {
     private final String ORDER_GET_REVIEW = "/review-writable";
 
     @PostMapping(ORDER_POST_DIRECT)
-    public ResponseEntity<ResponseDto<DirectOrderResponseDto>> directOrder (
+    public ResponseEntity<ResponseDto<PostOrderResponseDto>> directOrder (
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable Long pId,
-            @RequestBody DirectOrderRequestDto dto
+            @Valid @RequestBody DirectOrderRequestDto dto
     ) {
         if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         String username = userDetails.getUsername();
-        ResponseDto<DirectOrderResponseDto> response = orderService.directOrder(username, pId, dto);
+        ResponseDto<PostOrderResponseDto> response = orderService.directOrder(username, pId, dto);
         HttpStatus status = response.isResult() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
         return ResponseEntity.status(status).body(response);
     }
 
     @PostMapping(ORDER_POST_CART)
-    public ResponseEntity<ResponseDto<CartOrderResponseDto>> cartOrder (
+    public ResponseEntity<ResponseDto<PostOrderResponseDto>> cartOrder (
             @AuthenticationPrincipal UserDetails userDetails,
-            @RequestBody CartOrderRequestDto dto
+            @Valid @RequestBody CartOrderRequestDto dto
     ) {
         if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         String username = userDetails.getUsername();
-        ResponseDto<CartOrderResponseDto> response = orderService.cartOrder(username, dto);
+        ResponseDto<PostOrderResponseDto> response = orderService.cartOrder(username, dto);
         HttpStatus status = response.isResult() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
         return ResponseEntity.status(status).body(response);
     }

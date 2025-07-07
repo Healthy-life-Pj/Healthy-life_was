@@ -35,4 +35,8 @@ public class OrderDetail {
     @Column(name ="total_price", nullable = false)
     private int totalPrice;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "order_status", nullable = false)
+    private OrderStatus orderStatus;
+
 }

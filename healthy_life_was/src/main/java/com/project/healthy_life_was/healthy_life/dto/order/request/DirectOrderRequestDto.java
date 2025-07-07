@@ -16,6 +16,9 @@ public class DirectOrderRequestDto {
     private String shippingRequest;
     @NotNull
     private int quantity;
-    private List<DeliverAddress> deliverAddress;
+    @NotNull
+    private String orderRecipientName;
+    @NotNull
+    private DeliverAddress deliverAddress;
     private KGPaymentDto kgPayment;
 }

@@ -2,11 +2,13 @@ package com.project.healthy_life_was.healthy_life.service.implement;
 
 import com.project.healthy_life_was.healthy_life.common.constant.ResponseMessage;
 import com.project.healthy_life_was.healthy_life.dto.ResponseDto;
+import com.project.healthy_life_was.healthy_life.dto.order.OrderDto;
 import com.project.healthy_life_was.healthy_life.dto.order.request.CartOrderRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.order.request.DirectOrderRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.order.response.*;
 import com.project.healthy_life_was.healthy_life.entity.cart.Cart;
 import com.project.healthy_life_was.healthy_life.entity.cart.CartItem;
+import com.project.healthy_life_was.healthy_life.entity.deliverAddress.DeliverAddress;
 import com.project.healthy_life_was.healthy_life.entity.order.Order;
 import com.project.healthy_life_was.healthy_life.entity.order.OrderDetail;
 import com.project.healthy_life_was.healthy_life.entity.order.OrderStatus;
@@ -22,7 +24,6 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,18 +36,23 @@ public class OrderServiceImplement implements OrderService {
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
     private final ProductRepository productRepository;
+    private final DeliverAddressRepository deliverAddressRepository;
 
     @Override
-    public ResponseDto<CartOrderResponseDto> cartOrder(String username, CartOrderRequestDto dto) {
-        CartOrderResponseDto data = null;
+    public ResponseDto<PostOrderResponseDto> cartOrder(String username, CartOrderRequestDto dto) {
+        PostOrderResponseDto data = null;
         List<Long> cartItemIds = dto.getCartItemIds();
         String shippingRequest = dto.getShippingRequest();
+        String recipientName = dto.getOrderRecipientName();
+        String recipientPhone = dto.getOrderRecipientPhone();
+        Long deliverAddressId = dto.getDeliverAddressId();
 
         try {
             User user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "user"));
             Cart cart = cartRepository.findByUser(user)
                     .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "cart"));
+            DeliverAddress deliver = deliverAddressRepository.findByDeliverAddressId(deliverAddressId);
             List<CartItem> cartItems = cartItemRepository.findAllById(cartItemIds);
             if (cartItems.isEmpty()) {
                 throw new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "cart items");
@@ -59,18 +65,22 @@ public class OrderServiceImplement implements OrderService {
             Order order = Order.builder()
                     .cart(cart)
                     .user(user)
-                    .orderStatus(OrderStatus.PENDING)
+                    .orderRecipientName(recipientName)
+                    .orderRecipientPhone(recipientPhone)
                     .orderTotalAmount(totalAmount)
                     .shippingRequest(shippingRequest)
+                    .deliverAddress(deliver)
                     .orderDate(LocalDate.now())
                     .build();
             orderRepository.save(order);
+            cartRepository.deleteAll(cartItemIds);
 
             List<OrderDetail> orderDetails = cartItems.stream()
                     .map(cartItem -> {
                         OrderDetail orderDetail = OrderDetail.builder()
                                 .order(order)
                                 .product(cartItem.getProduct())
+                                .orderStatus(OrderStatus.PENDING)
                                 .quantity(cartItem.getProductQuantity())
                                 .price(cartItem.getProduct().getPPrice())
                                 .totalPrice(cartItem.getProductQuantity() * cartItem.getProduct().getPPrice())
@@ -81,7 +91,7 @@ public class OrderServiceImplement implements OrderService {
                     .collect(Collectors.toList());
 
 
-            data = new CartOrderResponseDto(order, orderDetails);
+            data = new PostOrderResponseDto(order, orderDetails);
             cartRepository.delete(cart);
         } catch (Exception e) {
             e.printStackTrace();
@@ -91,10 +101,11 @@ public class OrderServiceImplement implements OrderService {
     }
 
     @Override
-    public ResponseDto<DirectOrderResponseDto> directOrder(String username, Long pId, DirectOrderRequestDto dto) {
-        DirectOrderResponseDto data = null;
+    public ResponseDto<PostOrderResponseDto> directOrder(String username, Long pId, DirectOrderRequestDto dto) {
+        PostOrderResponseDto data = null;
         int quantity = dto.getQuantity();
         String shippingRequest = dto.getShippingRequest();
+        String recipientName = dto.getOrderRecipientName();
         try {
             User user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "user"));
@@ -106,7 +117,7 @@ public class OrderServiceImplement implements OrderService {
 
             Order order = Order.builder()
                     .user(user)
-                    .orderStatus(OrderStatus.PENDING)
+                    .orderRecipientName(recipientName)
                     .orderTotalAmount(totalAmount)
                     .shippingRequest(shippingRequest)
                     .orderDate(LocalDate.now())
@@ -116,6 +127,7 @@ public class OrderServiceImplement implements OrderService {
             List<OrderDetail> orderDetails = new ArrayList<>();
             OrderDetail orderDetail = OrderDetail.builder()
                     .order(order)
+                    .orderStatus(OrderStatus.PENDING)
                     .product(product)
                     .quantity(quantity)
                     .price(product.getPPrice())
@@ -124,7 +136,7 @@ public class OrderServiceImplement implements OrderService {
             orderDetailRepository.save(orderDetail);
             orderDetails.add(orderDetail);
 
-            data = new DirectOrderResponseDto(order, orderDetails);
+            data = new PostOrderResponseDto(order, orderDetails);
             return ResponseDto.setSuccess(ResponseMessage.SUCCESS, data);
         } catch (Exception e) {
             e.printStackTrace();
@@ -139,14 +151,15 @@ public class OrderServiceImplement implements OrderService {
         try {
             List<Order> orders;
 
-            if (startOrderDate == null && endOrderDate == null) {
+            if ((startOrderDate == null || startOrderDate.equals("")) &&
+                    (endOrderDate == null || endOrderDate.equals(""))) {
                 orders = orderRepository.findAllByUser_Username(username);
             } else {
                 orders = orderRepository.findAllByUser_usernameAndStartAndEnd(username, startOrderDate, endOrderDate);
             }
 
-            List<OrderResponseDto> dtos = orders.stream()
-                    .map(OrderResponseDto::new)
+            List<OrderDto> dtos = orders.stream()
+                    .map(OrderDto::new)
                     .collect(Collectors.toList());
 
 
@@ -166,22 +179,24 @@ public class OrderServiceImplement implements OrderService {
         try {
             OrderDetail orderDetail = orderDetailRepository.findById(orderDetailId)
                     .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "orderDetail"));
-            if (orderDetail.getOrder().getOrderStatus().equals(OrderStatus.CANCELLED)) {
+            if (orderDetail.getOrderStatus().equals(OrderStatus.CANCELLED)) {
                 return ResponseDto.setFailed(ResponseMessage.EXIST_DATA + "CANCELLED");
             }
-            if (orderDetail.getOrder().getOrderStatus().equals(OrderStatus.SHIPPED) && orderStatus.equals(OrderStatus.CANCELLED.name())) {
+            if (orderDetail.getOrderStatus().equals(OrderStatus.SHIPPED) && orderStatus.equals(OrderStatus.CANCELLED.name())) {
                 return ResponseDto.setFailed(ResponseMessage.CAN_NOT_CANCEL);
             }
-            if (orderDetail.getOrder().getOrderStatus().equals(OrderStatus.RETURN)) {
+            if (orderDetail.getOrderStatus().equals(OrderStatus.RETURN)
+                    && !orderStatus.equals(OrderStatus.DELIVERED.name())) {
                 return ResponseDto.setFailed(ResponseMessage.EXIST_DATA + "RETURN");
             }
-            if (orderDetail.getOrder().getOrderStatus().equals(OrderStatus.EXCHANGE)) {
+            if (orderDetail.getOrderStatus().equals(OrderStatus.EXCHANGE)
+                    && !orderStatus.equals(OrderStatus.DELIVERED.name())) {
                 return ResponseDto.setFailed(ResponseMessage.EXIST_DATA + "EXCHANGE");
             }
-            if (orderDetail.getOrder().getOrderStatus().equals(OrderStatus.SHIPPED) && orderStatus.equals(OrderStatus.EXCHANGE.name())) {
+            if (orderDetail.getOrderStatus().equals(OrderStatus.SHIPPED) && orderStatus.equals(OrderStatus.EXCHANGE.name())) {
                 return ResponseDto.setFailed(ResponseMessage.CAN_NOT_EXCHANGE);
             }
-            if (orderDetail.getOrder().getOrderStatus().equals(OrderStatus.SHIPPED) && orderStatus.equals(OrderStatus.RETURN.name())) {
+            if (orderDetail.getOrderStatus().equals(OrderStatus.SHIPPED) && orderStatus.equals(OrderStatus.RETURN.name())) {
                 return ResponseDto.setFailed(ResponseMessage.CAN_NOT_RETURN);
             }
 
@@ -189,7 +204,7 @@ public class OrderServiceImplement implements OrderService {
                 return ResponseDto.setFailed(ResponseMessage.CAN_NOT_CHANGE_STATUS);
             }
 
-            orderDetail.getOrder().setOrderStatus(OrderStatus.valueOf(orderStatus));
+            orderDetail.setOrderStatus(OrderStatus.valueOf(orderStatus));
 
             orderRepository.save(orderDetail.getOrder());
 
@@ -208,8 +223,8 @@ public class OrderServiceImplement implements OrderService {
             OrderDetail orderDetail = orderDetailRepository.findById(orderDetailId)
                     .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "orderDetail"));
 
-            if (orderDetail.getOrder().getOrderStatus().equals(OrderStatus.RETURN) || orderDetail.getOrder().getOrderStatus().equals(OrderStatus.EXCHANGE)) {
-                orderDetail.getOrder().setOrderStatus(OrderStatus.DELIVERED);
+            if (orderDetail.getOrderStatus().equals(OrderStatus.RETURN) || orderDetail.getOrderStatus().equals(OrderStatus.EXCHANGE)) {
+                orderDetail.setOrderStatus(OrderStatus.DELIVERED);
             } else {
                 return ResponseDto.setFailed(ResponseMessage.NOT_RETURN_EXCHANGE);
             }
@@ -231,11 +246,11 @@ public class OrderServiceImplement implements OrderService {
         try {
             List<Order> orders = orderRepository.findDeliveredOrdersWithoutReview(username);
 
-            List<OrderResponseDto> dtos = orders.stream()
-                    .map(OrderResponseDto::new)
+            List<OrderDto> orderList = orders.stream()
+                    .map(OrderDto::new)
                     .collect(Collectors.toList());
 
-            OrderListResponseDto responseDto = new OrderListResponseDto(dtos);
+            OrderListResponseDto responseDto = new OrderListResponseDto(orderList);
 
             return ResponseDto.setSuccess(ResponseMessage.SUCCESS, responseDto);
         } catch (Exception e) {

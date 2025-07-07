@@ -16,6 +16,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     SELECT DISTINCT o FROM Order o
     JOIN FETCH o.orderDetails od
     WHERE o.user.username = :username
+    ORDER BY o.orderDate DESC
 """)
     List<Order> findAllByUser_Username(String username);
 
@@ -28,6 +29,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
         (:startOrderDate IS NULL OR o.orderDate >= :startOrderDate)
         AND (:endOrderDate IS NULL OR o.orderDate <= :endOrderDate)
     )
+    ORDER BY o.orderDate DESC
 """)
     List<Order> findAllByUser_usernameAndStartAndEnd(String username, LocalDate startOrderDate, LocalDate endOrderDate);
 
@@ -35,7 +37,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     SELECT o
     FROM Order o
     JOIN FETCH o.orderDetails od 
-    WHERE o.orderStatus = 'DELIVERED' AND o.user.username = :username
+    WHERE od.orderStatus = 'DELIVERED' AND o.user.username = :username
         AND FUNCTION('DATEDIFF', CURRENT_DATE, o.orderDate) <= 30
         AND NOT EXISTS (
             SELECT 1 FROM Review r

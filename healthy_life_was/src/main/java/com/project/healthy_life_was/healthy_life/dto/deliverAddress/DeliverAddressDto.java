@@ -12,9 +12,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class DeliverAddressDto {
 
+    @NotNull
     private String address;
-
+    @NotNull
     private String addressDetail;
-
+    @NotNull
     private int postNum;
 }

@@ -6,6 +6,7 @@ import com.project.healthy_life_was.healthy_life.dto.qna.request.QnaRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.qna.response.QnaResponseDto;
 import com.project.healthy_life_was.healthy_life.entity.product.Product;
 import com.project.healthy_life_was.healthy_life.entity.qna.Qna;
+import com.project.healthy_life_was.healthy_life.entity.review.Review;
 import com.project.healthy_life_was.healthy_life.entity.user.User;
 import com.project.healthy_life_was.healthy_life.repository.ProductRepository;
 import com.project.healthy_life_was.healthy_life.repository.QnaRepository;
@@ -14,6 +15,7 @@ import com.project.healthy_life_was.healthy_life.service.QnaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -59,6 +61,7 @@ public class QnaServiceImplement implements QnaService {
         try{
             List<Qna> qna = qnaRepository.findByProduct_pId(pId);
             data = qna.stream()
+                    .sorted(Comparator.comparing(Qna::getQnaId).reversed())
                     .map(QnaResponseDto::new)
                     .toList();
         } catch (Exception e) {
@@ -74,6 +77,7 @@ public class QnaServiceImplement implements QnaService {
         try{
             List<Qna> qna = qnaRepository.findByUser_Username(username);
             data = qna.stream()
+                    .sorted(Comparator.comparing(Qna::getQnaId).reversed())
                     .map(QnaResponseDto::new)
                     .toList();
         } catch (Exception e) {
@@ -101,7 +105,6 @@ public class QnaServiceImplement implements QnaService {
             if (qna.getQnaAnswer() != null && !qna.getQnaAnswer().isEmpty()) {
                 return ResponseDto.setFailed(ResponseMessage.CAN_NOT_UPDATE_CONTENT);
             }
-
                 qna.setQnaTitle(dto.getQnaTitle());
                 qna.setQnaContent(dto.getQnaContent());
             qnaRepository.save(qna);
