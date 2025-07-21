@@ -17,5 +17,10 @@ import java.util.Optional;
 @Repository
 public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> {
 
+    @Query("""
+    SELECT od From OrderDetail od
+    WHERE od.orderDetailId = :orderDetailId
+""")
+    List<OrderDetail> findByOrderDetailIds(@Param("orderDetailIds") List<Long> orderDetailId);
 
 }

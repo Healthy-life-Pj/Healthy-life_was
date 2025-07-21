@@ -4,6 +4,7 @@ import com.project.healthy_life_was.healthy_life.common.constant.ApiMappingPatte
 import com.project.healthy_life_was.healthy_life.dto.ResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.order.request.CartOrderRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.order.request.DirectOrderRequestDto;
+import com.project.healthy_life_was.healthy_life.dto.order.request.OrderDetailIdListRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.order.response.*;
 import com.project.healthy_life_was.healthy_life.service.OrderService;
 import jakarta.validation.Valid;
@@ -76,14 +77,14 @@ public class OrderController {
     @PutMapping(ORDER_PUT)
     public ResponseEntity<ResponseDto<OrderCancelResponseDto>> changeOrderStatus (
             @AuthenticationPrincipal UserDetails userDetails,
-            @PathVariable Long orderDetailId,
+            @RequestBody OrderDetailIdListRequestDto dto,
             @RequestParam String orderStatus
     ) {
         if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         String username = userDetails.getUsername();
-        ResponseDto<OrderCancelResponseDto> response = orderService.changeOrderStatus(username, orderDetailId, orderStatus);
+        ResponseDto<OrderCancelResponseDto> response = orderService.changeOrderStatus(username, dto, orderStatus);
         HttpStatus status = response.isResult() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
         return ResponseEntity.status(status).body(response);
     }

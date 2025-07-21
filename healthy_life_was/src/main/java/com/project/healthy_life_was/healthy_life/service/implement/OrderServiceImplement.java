@@ -5,6 +5,7 @@ import com.project.healthy_life_was.healthy_life.dto.ResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.order.OrderDto;
 import com.project.healthy_life_was.healthy_life.dto.order.request.CartOrderRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.order.request.DirectOrderRequestDto;
+import com.project.healthy_life_was.healthy_life.dto.order.request.OrderDetailIdListRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.order.response.*;
 import com.project.healthy_life_was.healthy_life.entity.cart.Cart;
 import com.project.healthy_life_was.healthy_life.entity.cart.CartItem;
@@ -73,7 +74,7 @@ public class OrderServiceImplement implements OrderService {
                     .orderDate(LocalDate.now())
                     .build();
             orderRepository.save(order);
-            cartRepository.deleteAll(cartItemIds);
+            cartRepository.deleteByCartId(cartItemIds);
 
             List<OrderDetail> orderDetails = cartItems.stream()
                     .map(cartItem -> {
@@ -174,41 +175,46 @@ public class OrderServiceImplement implements OrderService {
     }
 
     @Override
-    public ResponseDto<OrderCancelResponseDto> changeOrderStatus(String username, Long orderDetailId, String orderStatus) {
+    public ResponseDto<OrderCancelResponseDto> changeOrderStatus(String username, OrderDetailIdListRequestDto dto, String orderStatus) {
         OrderCancelResponseDto data = null;
         try {
-            OrderDetail orderDetail = orderDetailRepository.findById(orderDetailId)
-                    .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "orderDetail"));
-            if (orderDetail.getOrderStatus().equals(OrderStatus.CANCELLED)) {
-                return ResponseDto.setFailed(ResponseMessage.EXIST_DATA + "CANCELLED");
+            List<OrderDetail> orderDetails = orderDetailRepository.findByOrderDetailIds(dto.getOrderDetails());
+            if (orderDetails.isEmpty()) {
+                throw new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "orderDetail");
             }
-            if (orderDetail.getOrderStatus().equals(OrderStatus.SHIPPED) && orderStatus.equals(OrderStatus.CANCELLED.name())) {
-                return ResponseDto.setFailed(ResponseMessage.CAN_NOT_CANCEL);
-            }
-            if (orderDetail.getOrderStatus().equals(OrderStatus.RETURN)
-                    && !orderStatus.equals(OrderStatus.DELIVERED.name())) {
-                return ResponseDto.setFailed(ResponseMessage.EXIST_DATA + "RETURN");
-            }
-            if (orderDetail.getOrderStatus().equals(OrderStatus.EXCHANGE)
-                    && !orderStatus.equals(OrderStatus.DELIVERED.name())) {
-                return ResponseDto.setFailed(ResponseMessage.EXIST_DATA + "EXCHANGE");
-            }
-            if (orderDetail.getOrderStatus().equals(OrderStatus.SHIPPED) && orderStatus.equals(OrderStatus.EXCHANGE.name())) {
-                return ResponseDto.setFailed(ResponseMessage.CAN_NOT_EXCHANGE);
-            }
-            if (orderDetail.getOrderStatus().equals(OrderStatus.SHIPPED) && orderStatus.equals(OrderStatus.RETURN.name())) {
-                return ResponseDto.setFailed(ResponseMessage.CAN_NOT_RETURN);
+            for (OrderDetail orderDetail : orderDetails) {
+                if (orderDetail.getOrderStatus().equals(OrderStatus.CANCELLED)) {
+                    return ResponseDto.setFailed(ResponseMessage.EXIST_DATA + "CANCELLED");
+                }
+                if (orderDetail.getOrderStatus().equals(OrderStatus.SHIPPED) && orderStatus.equals(OrderStatus.CANCELLED.name())) {
+                    return ResponseDto.setFailed(ResponseMessage.CAN_NOT_CANCEL);
+                }
+                if (orderDetail.getOrderStatus().equals(OrderStatus.RETURN)
+                        && !orderStatus.equals(OrderStatus.DELIVERED.name())) {
+                    return ResponseDto.setFailed(ResponseMessage.EXIST_DATA + "RETURN");
+                }
+                if (orderDetail.getOrderStatus().equals(OrderStatus.EXCHANGE)
+                        && !orderStatus.equals(OrderStatus.DELIVERED.name())) {
+                    return ResponseDto.setFailed(ResponseMessage.EXIST_DATA + "EXCHANGE");
+                }
+                if (orderDetail.getOrderStatus().equals(OrderStatus.SHIPPED) && orderStatus.equals(OrderStatus.EXCHANGE.name())) {
+                    return ResponseDto.setFailed(ResponseMessage.CAN_NOT_EXCHANGE);
+                }
+                if (orderDetail.getOrderStatus().equals(OrderStatus.SHIPPED) && orderStatus.equals(OrderStatus.RETURN.name())) {
+                    return ResponseDto.setFailed(ResponseMessage.CAN_NOT_RETURN);
+                }
+
+                if (orderStatus.equals(OrderStatus.CANCELLED.name()) || ChronoUnit.DAYS.between(orderDetail.getOrder().getOrderDate(), LocalDate.now()) > 7) {
+                    return ResponseDto.setFailed(ResponseMessage.CAN_NOT_CHANGE_STATUS);
+                }
+
+                orderDetail.setOrderStatus(OrderStatus.valueOf(orderStatus));
             }
 
-            if (orderStatus.equals(OrderStatus.CANCELLED.name()) ||  ChronoUnit.DAYS.between(orderDetail.getOrder().getOrderDate(), LocalDate.now()) > 7) {
-                return ResponseDto.setFailed(ResponseMessage.CAN_NOT_CHANGE_STATUS);
+            for (OrderDetail od : orderDetails) {
+                orderRepository.save(od.getOrder());
             }
-
-            orderDetail.setOrderStatus(OrderStatus.valueOf(orderStatus));
-
-            orderRepository.save(orderDetail.getOrder());
-
-            data = new OrderCancelResponseDto(orderDetail);
+            data = new OrderCancelResponseDto(orderDetails.get(0));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
