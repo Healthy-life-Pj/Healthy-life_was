@@ -26,7 +26,7 @@ public class OrderController {
     private final OrderService orderService;
     private final String ORDER_POST_CART = "/carts";
     private final String ORDER_POST_DIRECT = "/{pId}";
-    private final String ORDER_PUT = "/{orderDetailId}";
+    private final String ORDER_STATUS_PUT = "/order-status";
     private final String ORDER_PUT_CANCEL = "/cancel/{orderDetailId}";
     private final String ORDER_GET_REVIEW = "/review-writable";
 
@@ -74,8 +74,8 @@ public class OrderController {
         return ResponseEntity.status(status).body(response);
     }
 
-    @PutMapping(ORDER_PUT)
-    public ResponseEntity<ResponseDto<OrderCancelResponseDto>> changeOrderStatus (
+    @PutMapping(ORDER_STATUS_PUT)
+    public ResponseEntity<ResponseDto<OrderListResponseDto>> changeOrderStatus (
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestBody OrderDetailIdListRequestDto dto,
             @RequestParam String orderStatus
@@ -84,7 +84,7 @@ public class OrderController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         String username = userDetails.getUsername();
-        ResponseDto<OrderCancelResponseDto> response = orderService.changeOrderStatus(username, dto, orderStatus);
+        ResponseDto<OrderListResponseDto> response = orderService.changeOrderStatus(username, dto, orderStatus);
         HttpStatus status = response.isResult() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
         return ResponseEntity.status(status).body(response);
     }

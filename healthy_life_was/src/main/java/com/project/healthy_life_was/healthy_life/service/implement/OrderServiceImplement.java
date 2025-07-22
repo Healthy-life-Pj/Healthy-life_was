@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.awt.print.Printable;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -73,8 +74,10 @@ public class OrderServiceImplement implements OrderService {
                     .deliverAddress(deliver)
                     .orderDate(LocalDate.now())
                     .build();
+
+            order.setCart(null);
             orderRepository.save(order);
-            cartRepository.deleteByCartId(cartItemIds);
+            cartRepository.deleteByCartItemIds(cartItemIds);
 
             List<OrderDetail> orderDetails = cartItems.stream()
                     .map(cartItem -> {
@@ -93,7 +96,6 @@ public class OrderServiceImplement implements OrderService {
 
 
             data = new PostOrderResponseDto(order, orderDetails);
-            cartRepository.delete(cart);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
@@ -175,10 +177,10 @@ public class OrderServiceImplement implements OrderService {
     }
 
     @Override
-    public ResponseDto<OrderCancelResponseDto> changeOrderStatus(String username, OrderDetailIdListRequestDto dto, String orderStatus) {
-        OrderCancelResponseDto data = null;
+    public ResponseDto<OrderListResponseDto> changeOrderStatus(String username, OrderDetailIdListRequestDto dto, String orderStatus) {
+        OrderListResponseDto data = null;
         try {
-            List<OrderDetail> orderDetails = orderDetailRepository.findByOrderDetailIds(dto.getOrderDetails());
+            List<OrderDetail> orderDetails = orderDetailRepository.findByOrderDetailIds(dto.getOrderDetailIds());
             if (orderDetails.isEmpty()) {
                 throw new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "orderDetail");
             }
@@ -204,17 +206,24 @@ public class OrderServiceImplement implements OrderService {
                     return ResponseDto.setFailed(ResponseMessage.CAN_NOT_RETURN);
                 }
 
-                if (orderStatus.equals(OrderStatus.CANCELLED.name()) || ChronoUnit.DAYS.between(orderDetail.getOrder().getOrderDate(), LocalDate.now()) > 7) {
-                    return ResponseDto.setFailed(ResponseMessage.CAN_NOT_CHANGE_STATUS);
+                if (ChronoUnit.DAYS.between(orderDetail.getOrder().getOrderDate(), LocalDate.now()) >= 8) {
+                    return ResponseDto.setFailed(ResponseMessage.CAN_NOT_CHANGE_STATUS_DATE);   
                 }
 
                 orderDetail.setOrderStatus(OrderStatus.valueOf(orderStatus));
             }
 
-            for (OrderDetail od : orderDetails) {
-                orderRepository.save(od.getOrder());
-            }
-            data = new OrderCancelResponseDto(orderDetails.get(0));
+            orderDetails.stream()
+                    .map(OrderDetail::getOrder)
+                    .distinct()
+                    .forEach(orderRepository::save);
+
+            List<OrderDto> orders = orderDetails.stream()
+                    .map(OrderDetail::getOrder)
+                    .map(OrderDto::new)
+                    .distinct()
+                    .toList();
+            data = new OrderListResponseDto(orders);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);

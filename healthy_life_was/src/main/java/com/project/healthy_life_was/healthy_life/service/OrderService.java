@@ -15,7 +15,7 @@ public interface OrderService {
 
     ResponseDto<OrderListResponseDto> getOrder(String username, LocalDate startOrderDate, LocalDate endOrderDate);
 
-    ResponseDto<OrderCancelResponseDto> changeOrderStatus(String username, OrderDetailIdListRequestDto dto, String orderStatus);
+    ResponseDto<OrderListResponseDto> changeOrderStatus(String username, OrderDetailIdListRequestDto dto, String orderStatus);
 
     ResponseDto<OrderCancelResponseDto> cancelReturnOrExchange(String username, Long orderDetailId);
 
