@@ -4,6 +4,7 @@ import com.project.healthy_life_was.healthy_life.common.constant.ResponseMessage
 import com.project.healthy_life_was.healthy_life.dto.ResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.cart.CartItemDto;
 import com.project.healthy_life_was.healthy_life.dto.cart.request.CartAddRequestDto;
+import com.project.healthy_life_was.healthy_life.dto.cart.request.CartItemListRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.cart.request.CartUpdateQuantityRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.cart.request.DeleteCartItemsDto;
 import com.project.healthy_life_was.healthy_life.dto.cart.response.CartAddResponseDto;
@@ -19,6 +20,7 @@ import com.project.healthy_life_was.healthy_life.repository.ProductRepository;
 import com.project.healthy_life_was.healthy_life.repository.UserRepository;
 import com.project.healthy_life_was.healthy_life.service.CartService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -159,5 +161,36 @@ public class CartServiceImplement implements CartService {
             return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
         }
         return ResponseDto.setSuccess(ResponseMessage.SUCCESS, null);
+    }
+
+    @Override
+    public ResponseDto<CartDetailResponseDto> getCartItemList(String username, List<Long> cartItemIds) {
+        CartDetailResponseDto data = null;
+
+        try {
+            if(cartItemIds == null || cartItemIds.isEmpty()) {
+                return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_DATA + "cartItemList");
+            }
+            List<CartItem> cartItems = cartItemRepository.findAllById(cartItemIds);
+            if(cartItems.isEmpty()) {
+                return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_DATA + "cartItems");
+            }
+            List<CartItemDto> cartItemDto = cartItems.stream()
+                    .map( cart -> new CartItemDto(
+                            cart.getCartItemId(),
+                            cart.getProduct().getPId(),
+                            cart.getProduct().getPName(),
+                            cart.getProductQuantity(),
+                            cart.getProductPrice(),
+                            cart.getProduct().getPImgUrl()
+                    ))
+                    .toList();
+
+            data = new CartDetailResponseDto(cartItemDto);
+        } catch (Exception e) {
+            return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_DATA);
+        }
+            return ResponseDto.setSuccess(ResponseMessage.SUCCESS, data);
+
     }
 }
