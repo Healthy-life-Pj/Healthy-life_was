@@ -13,12 +13,14 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DirectOrderRequestDto {
-    private String shippingRequest;
     @NotNull
     private int quantity;
     @NotNull
     private String orderRecipientName;
     @NotNull
-    private DeliverAddress deliverAddress;
+    private String orderRecipientPhone;
+    @NotNull
+    private Long deliverAddressId;
+    private String shippingRequest;
     private KGPaymentDto kgPayment;
 }

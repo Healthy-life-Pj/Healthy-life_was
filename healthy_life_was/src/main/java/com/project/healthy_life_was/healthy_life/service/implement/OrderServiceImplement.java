@@ -109,12 +109,14 @@ public class OrderServiceImplement implements OrderService {
         int quantity = dto.getQuantity();
         String shippingRequest = dto.getShippingRequest();
         String recipientName = dto.getOrderRecipientName();
+        Long deliverAddressId = dto.getDeliverAddressId();
         try {
             User user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "user"));
 
             Product product = productRepository.findById(pId)
                     .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "product"));
+            DeliverAddress deliver = deliverAddressRepository.findByDeliverAddressId(deliverAddressId);
 
             int totalAmount = (product.getPPrice() * quantity) + 3000;
 
@@ -123,6 +125,7 @@ public class OrderServiceImplement implements OrderService {
                     .orderRecipientName(recipientName)
                     .orderTotalAmount(totalAmount)
                     .shippingRequest(shippingRequest)
+                    .deliverAddress(deliver)
                     .orderDate(LocalDate.now())
                     .build();
             orderRepository.save(order);
