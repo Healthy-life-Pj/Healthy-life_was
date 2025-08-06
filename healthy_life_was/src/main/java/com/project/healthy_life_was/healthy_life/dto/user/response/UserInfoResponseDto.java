@@ -43,7 +43,7 @@ public class UserInfoResponseDto {
         this.deliverAddressInfo = user.getDeliverAddress()
                 .stream()
                 .map((address) -> {
-                    return new DeliverAddressDto(address.getAddress(), address.getAddressDetail(), address.getPostNum());
+                    return new DeliverAddressDto(address.getDeliverAddressId(), address.getAddress(), address.getAddressDetail(), address.getPostNum());
                 }).collect(Collectors.toList());
     }
 }

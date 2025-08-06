@@ -179,7 +179,7 @@ public class AuthServiceImplement implements AuthService {
             int exprTime = jwtProvider.getExpiration();
 
             List<DeliverAddressDto> deliverAddressDtoList = deliverAddressList.stream()
-                    .map(address -> new DeliverAddressDto(address.getAddress(), address.getAddressDetail(), address.getPostNum()))
+                    .map(address -> new DeliverAddressDto(address.getDeliverAddressId(), address.getAddress(), address.getAddressDetail(), address.getPostNum()))
                     .collect(Collectors.toList());
 
             data = new LoginResponseDto(user, deliverAddressDtoList, token, exprTime);

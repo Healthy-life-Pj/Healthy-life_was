@@ -109,6 +109,7 @@ public class OrderServiceImplement implements OrderService {
         int quantity = dto.getQuantity();
         String shippingRequest = dto.getShippingRequest();
         String recipientName = dto.getOrderRecipientName();
+        String recipientPhone = dto.getOrderRecipientPhone();
         Long deliverAddressId = dto.getDeliverAddressId();
         try {
             User user = userRepository.findByUsername(username)
@@ -123,6 +124,7 @@ public class OrderServiceImplement implements OrderService {
             Order order = Order.builder()
                     .user(user)
                     .orderRecipientName(recipientName)
+                    .orderRecipientPhone(recipientPhone)
                     .orderTotalAmount(totalAmount)
                     .shippingRequest(shippingRequest)
                     .deliverAddress(deliver)

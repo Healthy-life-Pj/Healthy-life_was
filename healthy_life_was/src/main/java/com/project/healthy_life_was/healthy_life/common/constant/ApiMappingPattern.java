@@ -25,4 +25,6 @@ public class ApiMappingPattern {
     public static final String QNA = "/api/v1/qnas";
 
     public static final String MAIL = "/api/v1/mail";
+
+    public static final String DELIVER_ADDRESS = "/api/v1/deliver-address";
 }

@@ -46,7 +46,7 @@ public class CartServiceImplement implements CartService {
                     .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "pId"));
 
             if (quantity > product.getPStockStatus()) {
-                return ResponseDto.setFailed(ResponseMessage.PURCHASE_INVENTORY); // 재고 부족 처리
+                return ResponseDto.setFailed(ResponseMessage.PURCHASE_INVENTORY);
             }
 
             Cart cart = cartRepository.findByUser(user)
