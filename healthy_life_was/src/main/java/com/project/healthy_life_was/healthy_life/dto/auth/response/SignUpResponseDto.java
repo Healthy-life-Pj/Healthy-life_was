@@ -59,7 +59,7 @@ public class SignUpResponseDto {
         this.snsId = user.getSnsId();
 
         this.deliverAddress = deliverAddressList.stream()
-                .map(address -> new DeliverAddressDto(address.getDeliverAddressId(), address.getAddress(), address.getAddressDetail(), address.getPostNum()))
+                .map(address -> new DeliverAddressDto(address.getDeliverAddressId(), address.getAddress(), address.getAddressDetail(), address.getPostNum(), address.isDefault()))
                 .collect(Collectors.toList());
     }
 

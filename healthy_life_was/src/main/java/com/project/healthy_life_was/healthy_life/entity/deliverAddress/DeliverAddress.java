@@ -33,4 +33,8 @@ public class DeliverAddress {
 
     @Column (name = "post_num")
     private int postNum;
+
+    @Column (name = "is_default", nullable = false)
+    private boolean isDefault;
+
 }

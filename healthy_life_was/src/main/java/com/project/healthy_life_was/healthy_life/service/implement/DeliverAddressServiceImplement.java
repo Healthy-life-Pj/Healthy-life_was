@@ -4,6 +4,7 @@ import com.project.healthy_life_was.healthy_life.common.constant.ResponseMessage
 import com.project.healthy_life_was.healthy_life.dto.ResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.deliverAddress.DeliverAddressDto;
 import com.project.healthy_life_was.healthy_life.dto.deliverAddress.request.DeliverAddressRequestDto;
+import com.project.healthy_life_was.healthy_life.dto.deliverAddress.response.DeliverAddressListResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.deliverAddress.response.DeliverAddressResponseDto;
 import com.project.healthy_life_was.healthy_life.entity.deliverAddress.DeliverAddress;
 import com.project.healthy_life_was.healthy_life.entity.user.User;
@@ -14,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,8 +27,8 @@ public class DeliverAddressServiceImplement implements DeliverAddressService {
     public ResponseDto<DeliverAddressResponseDto> createAddress(String username, DeliverAddressRequestDto dto) {
         try {
 
-            Optional<User> user = userRepository.findByUsername(username);
-            if (user.isEmpty()) {
+            User user = userRepository.findBUser(username);
+            if (user == null) {
                 return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_DATA);
             }
 
@@ -36,11 +36,15 @@ public class DeliverAddressServiceImplement implements DeliverAddressService {
                     .postNum(dto.getPostNum())
                     .address(dto.getAddress())
                     .addressDetail(dto.getAddressDetail())
+                    .user(user)
                     .build();
 
             deliverAddressRepository.save(deliverAddress);
 
-            DeliverAddressResponseDto response = new DeliverAddressResponseDto(deliverAddress);
+            DeliverAddressDto deliverAddressDto = new DeliverAddressDto(deliverAddress);
+
+            DeliverAddressResponseDto response = new DeliverAddressResponseDto(deliverAddressDto);
+
             return ResponseDto.setSuccess(ResponseMessage.SUCCESS,response);
 
         } catch (Exception e) {
@@ -50,7 +54,7 @@ public class DeliverAddressServiceImplement implements DeliverAddressService {
     }
 
     @Override
-    public ResponseDto<DeliverAddressResponseDto> getAddressAll(String username) {
+    public ResponseDto<DeliverAddressListResponseDto> getAddressAll(String username) {
         try {
             List<DeliverAddress> deliverAddressList = deliverAddressRepository.findByUser_Username(username);
             if (deliverAddressList.isEmpty()) {
@@ -61,7 +65,7 @@ public class DeliverAddressServiceImplement implements DeliverAddressService {
                     .map(DeliverAddressDto::new)
                     .collect(Collectors.toList());
 
-            DeliverAddressResponseDto data = new DeliverAddressResponseDto((DeliverAddress) response);
+            DeliverAddressListResponseDto data = new DeliverAddressListResponseDto(response);
 
             return ResponseDto.setSuccess(ResponseMessage.SUCCESS, data);
         } catch (Exception e) {
@@ -71,9 +75,9 @@ public class DeliverAddressServiceImplement implements DeliverAddressService {
     }
 
     @Override
-    public ResponseDto<DeliverAddressResponseDto> updateAddress(String username, DeliverAddressRequestDto dto, Long addressDeliverId) {
+    public ResponseDto<DeliverAddressResponseDto> updateAddress(String username, DeliverAddressRequestDto dto, Long deliverAddressId) {
         try {
-           DeliverAddress deliverAddress = deliverAddressRepository.findByDeliverAddressId(addressDeliverId);
+           DeliverAddress deliverAddress = deliverAddressRepository.findByDeliverAddressId(deliverAddressId);
            if (deliverAddress == null) {
                return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_DATA + "deliverAddress");
            }
@@ -84,7 +88,9 @@ public class DeliverAddressServiceImplement implements DeliverAddressService {
 
             deliverAddressRepository.save(deliverAddress);
 
-            DeliverAddressResponseDto data = new DeliverAddressResponseDto(deliverAddress);
+            DeliverAddressDto deliverAddressDto = new DeliverAddressDto(deliverAddress);
+
+            DeliverAddressResponseDto data = new DeliverAddressResponseDto(deliverAddressDto);
 
            return ResponseDto.setSuccess(ResponseMessage.SUCCESS, data);
         } catch (Exception e) {
@@ -102,6 +108,61 @@ public class DeliverAddressServiceImplement implements DeliverAddressService {
             }
             deliverAddressRepository.delete(deliverAddress);
             return ResponseDto.setSuccess(ResponseMessage.SUCCESS, null);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
+        }
+    }
+
+    @Override
+    public ResponseDto<DeliverAddressResponseDto> getAddressOne(String username, Long deliverAddressId) {
+        try {
+            DeliverAddress deliverAddress = deliverAddressRepository.findByDeliverAddressId(deliverAddressId);
+            if (deliverAddress == null) {
+                return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_DATA);
+            }
+            DeliverAddressDto deliverAddressDto = new DeliverAddressDto(deliverAddress);
+
+            DeliverAddressResponseDto data = new DeliverAddressResponseDto(deliverAddressDto);
+
+            return ResponseDto.setSuccess(ResponseMessage.SUCCESS, data);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
+        }
+    }
+
+    @Override
+    public ResponseDto<DeliverAddressResponseDto> addressIsDefault(String username, Long deliverAddressId) {
+        try {
+            List<DeliverAddress> addressList = deliverAddressRepository.findByUser_Username(username);
+            if (addressList.isEmpty()) {
+                return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_DATA);
+            }
+
+            for (DeliverAddress a : addressList) {
+                if (a.isDefault()) {
+                    a.setDefault(false);
+                    deliverAddressRepository.save(a);
+                }
+            }
+
+            DeliverAddress deliverAddress = deliverAddressRepository.findByDeliverAddressId(deliverAddressId);
+            if (deliverAddress == null) {
+                return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_DATA);
+            }
+
+            deliverAddress.setDefault(true);
+
+            deliverAddressRepository.save(deliverAddress);
+
+            DeliverAddressDto deliverAddressDto = new DeliverAddressDto(deliverAddress);
+
+            DeliverAddressResponseDto data = new DeliverAddressResponseDto(deliverAddressDto);
+
+            return ResponseDto.setSuccess(ResponseMessage.SUCCESS, data);
+
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);

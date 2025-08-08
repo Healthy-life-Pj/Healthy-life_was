@@ -16,11 +16,14 @@ public class DeliverAddressDto {
     private String address;
     private String addressDetail;
     private int postNum;
+    private boolean isDefault;
+
 
     public DeliverAddressDto(DeliverAddress deliverAddress) {
         this.deliverAddressId = deliverAddress.getDeliverAddressId();
         this.address = deliverAddress.getAddress();
         this.addressDetail = deliverAddress.getAddressDetail();
         this.postNum = deliverAddress.getPostNum();
+        this.isDefault = deliverAddress.isDefault();
     }
 }
