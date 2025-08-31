@@ -52,12 +52,18 @@ public class OrderServiceImplement implements OrderService {
         try {
             User user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "user"));
+
             Cart cart = cartRepository.findByUser(user)
                     .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "cart"));
+
             DeliverAddress deliver = deliverAddressRepository.findByDeliverAddressId(deliverAddressId);
+            if (deliver == null || !deliver.getUser().equals(user)){
+                throw new IllegalArgumentException(ResponseMessage.NO_PERMISSION + "deliverAddress");
+            }
+
             List<CartItem> cartItems = cartItemRepository.findAllById(cartItemIds);
-            if (cartItems.isEmpty()) {
-                throw new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "cart items");
+            if (cartItems.isEmpty() || cartItems.stream().anyMatch(c -> !c.getCart().getUser().equals(user))) {
+                throw new IllegalArgumentException(ResponseMessage.NO_PERMISSION + "cartItems");
             }
 
             int totalAmount = cartItems.stream()
