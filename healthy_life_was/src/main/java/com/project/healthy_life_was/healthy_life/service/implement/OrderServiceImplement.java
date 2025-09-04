@@ -7,6 +7,9 @@ import com.project.healthy_life_was.healthy_life.dto.order.request.CartOrderRequ
 import com.project.healthy_life_was.healthy_life.dto.order.request.DirectOrderRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.order.request.OrderDetailIdListRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.order.response.*;
+import com.project.healthy_life_was.healthy_life.dto.payment.ApiResponseDto;
+import com.project.healthy_life_was.healthy_life.dto.payment.KGPaymentDto;
+import com.project.healthy_life_was.healthy_life.dto.payment.VerifyRequestDto;
 import com.project.healthy_life_was.healthy_life.entity.cart.Cart;
 import com.project.healthy_life_was.healthy_life.entity.cart.CartItem;
 import com.project.healthy_life_was.healthy_life.entity.deliverAddress.DeliverAddress;
@@ -16,6 +19,7 @@ import com.project.healthy_life_was.healthy_life.entity.order.OrderStatus;
 import com.project.healthy_life_was.healthy_life.entity.product.Product;
 import com.project.healthy_life_was.healthy_life.entity.user.User;
 import com.project.healthy_life_was.healthy_life.repository.*;
+import com.project.healthy_life_was.healthy_life.service.KGPaymentService;
 import com.project.healthy_life_was.healthy_life.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,6 +30,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,7 +44,7 @@ public class OrderServiceImplement implements OrderService {
     private final CartItemRepository cartItemRepository;
     private final ProductRepository productRepository;
     private final DeliverAddressRepository deliverAddressRepository;
-
+    private final KGPaymentService kgPaymentService;
     @Override
     public ResponseDto<PostOrderResponseDto> cartOrder(String username, CartOrderRequestDto dto) {
         PostOrderResponseDto data = null;
@@ -69,6 +74,7 @@ public class OrderServiceImplement implements OrderService {
             int totalAmount = cartItems.stream()
                     .mapToInt(cartItem -> cartItem.getProductQuantity() * cartItem.getProduct().getPPrice())
                     .sum() + 3000;
+            verifyPaymentOrThrow(dto.getKgPayment(), totalAmount);
 
             Order order = Order.builder()
                     .cart(cart)
@@ -126,7 +132,7 @@ public class OrderServiceImplement implements OrderService {
             DeliverAddress deliver = deliverAddressRepository.findByDeliverAddressId(deliverAddressId);
 
             int totalAmount = (product.getPPrice() * quantity) + 3000;
-
+            verifyPaymentOrThrow(dto.getKgPayment(), totalAmount);
             Order order = Order.builder()
                     .user(user)
                     .orderRecipientName(recipientName)
@@ -282,6 +288,40 @@ public class OrderServiceImplement implements OrderService {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
+        }
+    }
+
+    private void verifyPaymentOrThrow(KGPaymentDto kg, int expectedAmount) {
+        if (kg == null) throw new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "kgPayment");
+
+        VerifyRequestDto req = new VerifyRequestDto();
+        req.setImpUid(kg.getImpUid());
+        req.setMerchantUid(kg.getMerchantUid());
+
+        ApiResponseDto res = kgPaymentService.verify(req);
+
+        // 1) API 호출 성공 여부: status == "OK"
+        if (res == null || res.getStatus() == null || !"OK".equalsIgnoreCase(res.getStatus()) || res.getData() == null) {
+            throw new IllegalArgumentException(ResponseMessage.NO_PERMISSION); // 키 없으면 임시로 NO_PERMISSION 등 사용
+        }
+
+        Map<String, Object> map = res.getData();
+
+        // 2) 결제 금액
+        Object amountObj = map.get("amount"); // KGPaymentService에서 넣어준 키 이름과 동일해야 함
+        if (amountObj == null) throw new IllegalArgumentException(ResponseMessage.NO_PERMISSION);
+
+        int paidAmount;
+        if (amountObj instanceof Number n) paidAmount = n.intValue();
+        else paidAmount = Integer.parseInt(String.valueOf(amountObj));
+
+        // 3) 결제 상태(예: "paid", "ready", "cancelled"...)
+        String payStatus = String.valueOf(map.get("status"));
+        if (!"paid".equalsIgnoreCase(payStatus)) {
+            throw new IllegalArgumentException(ResponseMessage.NO_PERMISSION);
+        }
+        if (paidAmount != expectedAmount) {
+            throw new IllegalArgumentException(ResponseMessage.NO_PERMISSION);
         }
     }
 
