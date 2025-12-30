@@ -5,6 +5,7 @@ import com.project.healthy_life_was.healthy_life.entity.physique.PhysiqueTag;
 import com.project.healthy_life_was.healthy_life.entity.product.Product;
 import com.project.healthy_life_was.healthy_life.entity.product.ProductCategoryDetail;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -13,6 +14,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class ProductListResponseDto {
     @JsonProperty("pId")
     private Long pId;
@@ -20,6 +22,7 @@ public class ProductListResponseDto {
     private String pName;
     @JsonProperty("pPrice")
     private int pPrice;
+    @JsonProperty("pImgUrl")
     private String pImgUrl;
     @JsonProperty("pCategoryName")
     private String pCategoryName;
@@ -39,5 +42,14 @@ public class ProductListResponseDto {
                 .map(PhysiqueTag::getPhysiqueName)
                 .toList();
         this.averageRating = (int) averageRating;
+    }
+
+    public static ProductListResponseDto from(Product product) {
+        return ProductListResponseDto.builder()
+                .pId(product.getPId())
+                .pName(product.getPName())
+                .pPrice(product.getPPrice())
+                .pImgUrl(product.getPImgUrl())
+                .build();
     }
 }

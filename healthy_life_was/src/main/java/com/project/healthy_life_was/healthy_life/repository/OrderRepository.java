@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
@@ -16,7 +17,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     SELECT DISTINCT o FROM Order o
     JOIN FETCH o.orderDetails od
     WHERE o.user.username = :username
-    ORDER BY o.orderDate DESC
+    ORDER BY o.orderId DESC
 """)
     List<Order> findAllByUser_Username(String username);
 
@@ -46,4 +47,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
         )
 """)
     List<Order> findDeliveredOrdersWithoutReview(String username);
+
+    Optional<Order> findByOrderCode(String merchantUid);
 }

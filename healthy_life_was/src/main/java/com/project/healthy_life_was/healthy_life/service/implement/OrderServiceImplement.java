@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.awt.print.Printable;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +46,12 @@ public class OrderServiceImplement implements OrderService {
     private final ProductRepository productRepository;
     private final DeliverAddressRepository deliverAddressRepository;
     private final KGPaymentService kgPaymentService;
+
+    private String makeOrderCode(Long id) {
+        return LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE)
+                + "-" + String.format("%06d", id);
+    }
+
     @Override
     public ResponseDto<PostOrderResponseDto> cartOrder(String username, CartOrderRequestDto dto) {
         PostOrderResponseDto data = null;
@@ -88,7 +95,9 @@ public class OrderServiceImplement implements OrderService {
                     .build();
 
             order.setCart(null);
+            order.setOrderCode(makeOrderCode(order.getOrderId()));
             orderRepository.save(order);
+
             cartRepository.deleteByCartItemIds(cartItemIds);
 
             List<OrderDetail> orderDetails = cartItems.stream()
@@ -116,53 +125,70 @@ public class OrderServiceImplement implements OrderService {
     }
 
     @Override
+    @Transactional
     public ResponseDto<PostOrderResponseDto> directOrder(String username, Long pId, DirectOrderRequestDto dto) {
-        PostOrderResponseDto data = null;
-        int quantity = dto.getQuantity();
-        String shippingRequest = dto.getShippingRequest();
-        String recipientName = dto.getOrderRecipientName();
-        String recipientPhone = dto.getOrderRecipientPhone();
-        Long deliverAddressId = dto.getDeliverAddressId();
         try {
+            int quantity = Math.max(dto.getQuantity(), 1);
+            String shippingRequest = (dto.getShippingRequest() == null || dto.getShippingRequest().isBlank())
+                    ? "요청사항 없음" : dto.getShippingRequest();
+
             User user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "user"));
 
             Product product = productRepository.findById(pId)
                     .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "product"));
-            DeliverAddress deliver = deliverAddressRepository.findByDeliverAddressId(deliverAddressId);
 
-            int totalAmount = (product.getPPrice() * quantity) + 3000;
-            verifyPaymentOrThrow(dto.getKgPayment(), totalAmount);
+            DeliverAddress deliver = deliverAddressRepository.findByDeliverAddressId(dto.getDeliverAddressId());
+            if (deliver == null || !deliver.getUser().getUserId().equals(user.getUserId())) {
+                throw new IllegalArgumentException("No permission: deliverAddress");
+            }
+
+            System.out.println("Logged-in user ID: " + user.getUserId());
+            System.out.println("Deliver user ID: " + deliver.getUser().getUserId());
+
+            final int shippingCost = 3000;
+            final int totalAmount = product.getPPrice() * quantity + shippingCost;
+
             Order order = Order.builder()
                     .user(user)
-                    .orderRecipientName(recipientName)
-                    .orderRecipientPhone(recipientPhone)
+                    .deliverAddress(deliver)
+                    .orderRecipientName(dto.getOrderRecipientName())
+                    .orderRecipientPhone(dto.getOrderRecipientPhone())
                     .orderTotalAmount(totalAmount)
                     .shippingRequest(shippingRequest)
-                    .deliverAddress(deliver)
+                    .shippingCost(shippingCost)
                     .orderDate(LocalDate.now())
                     .build();
+            order = orderRepository.save(order);
+
+            String orderCode = dto.getKgPayment().getMerchantUid();
+            order.setOrderCode(orderCode);
             orderRepository.save(order);
 
-            List<OrderDetail> orderDetails = new ArrayList<>();
             OrderDetail orderDetail = OrderDetail.builder()
                     .order(order)
-                    .orderStatus(OrderStatus.PENDING)
                     .product(product)
                     .quantity(quantity)
                     .price(product.getPPrice())
-                    .totalPrice(quantity * product.getPPrice())
+                    .totalPrice(product.getPPrice() * quantity)
+                    .orderStatus(OrderStatus.PENDING)
+                    .preDeliveryStatus(null)
                     .build();
             orderDetailRepository.save(orderDetail);
-            orderDetails.add(orderDetail);
 
-            data = new PostOrderResponseDto(order, orderDetails);
+            List<OrderDetail> orderDetails = List.of(orderDetail);
+            PostOrderResponseDto data = new PostOrderResponseDto(order, orderDetails);
             return ResponseDto.setSuccess(ResponseMessage.SUCCESS, data);
+
+        } catch (IllegalArgumentException e) {
+            return ResponseDto.setFailed(e.getMessage());
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
         }
     }
+
+
 
     @Override
     public ResponseDto<OrderListResponseDto> getOrder(String username, LocalDate startOrderDate, LocalDate endOrderDate) {
@@ -208,25 +234,38 @@ public class OrderServiceImplement implements OrderService {
                 if (orderDetail.getOrderStatus().equals(OrderStatus.SHIPPED) && orderStatus.equals(OrderStatus.CANCELLED.name())) {
                     return ResponseDto.setFailed(ResponseMessage.CAN_NOT_CANCEL);
                 }
-                if (orderDetail.getOrderStatus().equals(OrderStatus.RETURN)
-                        && !orderStatus.equals(OrderStatus.DELIVERED.name())) {
-                    return ResponseDto.setFailed(ResponseMessage.EXIST_DATA + "RETURN");
+                if (orderDetail.getOrderStatus().equals(OrderStatus.RETURNED)) {
+                    return ResponseDto.setFailed(ResponseMessage.CAN_NOT_CHANGE_ORDER_STATUS + "RETURNED");
                 }
-                if (orderDetail.getOrderStatus().equals(OrderStatus.EXCHANGE)
-                        && !orderStatus.equals(OrderStatus.DELIVERED.name())) {
-                    return ResponseDto.setFailed(ResponseMessage.EXIST_DATA + "EXCHANGE");
+                if (orderDetail.getOrderStatus().equals(OrderStatus.EXCHANGED)) {
+                    return ResponseDto.setFailed(ResponseMessage.CAN_NOT_CHANGE_ORDER_STATUS + "EXCHANGED");
                 }
-                if (orderDetail.getOrderStatus().equals(OrderStatus.SHIPPED) && orderStatus.equals(OrderStatus.EXCHANGE.name())) {
+                if (orderDetail.getOrderStatus().equals(OrderStatus.CONFIRMED) && orderStatus.equals(OrderStatus.CANCELLED.name())) {
                     return ResponseDto.setFailed(ResponseMessage.CAN_NOT_EXCHANGE);
                 }
-                if (orderDetail.getOrderStatus().equals(OrderStatus.SHIPPED) && orderStatus.equals(OrderStatus.RETURN.name())) {
+                if (orderDetail.getOrderStatus().equals(OrderStatus.SHIPPED) && orderStatus.equals(OrderStatus.RETURN_REQUEST.name())) {
                     return ResponseDto.setFailed(ResponseMessage.CAN_NOT_RETURN);
                 }
-
+                if (orderDetail.getOrderStatus().equals(OrderStatus.RETURN_REQUEST)) {
+                    return ResponseDto.setFailed(ResponseMessage.CAN_NOT_CHANGE_ORDER_STATUS + "RETURN_REQUEST");
+                }
+                if (orderDetail.getOrderStatus().equals(OrderStatus.EXCHANGE_REQUEST)) {
+                    return ResponseDto.setFailed(ResponseMessage.CAN_NOT_CHANGE_ORDER_STATUS + "EXCHANGE_REQUEST");
+                }
+                if (orderDetail.getOrderStatus().equals(OrderStatus.EXCHANGE_IN_PROGRESS)) {
+                    return ResponseDto.setFailed(ResponseMessage.CAN_NOT_CHANGE_ORDER_STATUS + "EXCHANGE_IN_PROGRESS");
+                }
+                if (orderDetail.getOrderStatus().equals(OrderStatus.RETURN_IN_PROGRESS)) {
+                    return ResponseDto.setFailed(ResponseMessage.CAN_NOT_CHANGE_ORDER_STATUS + "RETURN_IN_PROGRESS");
+                }
+                if (orderDetail.getOrderStatus().equals(OrderStatus.CONFIRMED)) {
+                    return ResponseDto.setFailed(ResponseMessage.CAN_NOT_CHANGE_ORDER_STATUS + "CONFIRMED");
+                }
                 if (ChronoUnit.DAYS.between(orderDetail.getOrder().getOrderDate(), LocalDate.now()) >= 8) {
                     return ResponseDto.setFailed(ResponseMessage.CAN_NOT_CHANGE_STATUS_DATE);   
                 }
 
+                orderDetail.setPreDeliveryStatus(String.valueOf(orderDetail.getOrderStatus()));
                 orderDetail.setOrderStatus(OrderStatus.valueOf(orderStatus));
             }
 
@@ -255,12 +294,13 @@ public class OrderServiceImplement implements OrderService {
             OrderDetail orderDetail = orderDetailRepository.findById(orderDetailId)
                     .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "orderDetail"));
 
-            if (orderDetail.getOrderStatus().equals(OrderStatus.RETURN) || orderDetail.getOrderStatus().equals(OrderStatus.EXCHANGE)) {
-                orderDetail.setOrderStatus(OrderStatus.DELIVERED);
+            if (orderDetail.getOrderStatus().equals(OrderStatus.RETURN_REQUEST) || orderDetail.getOrderStatus().equals(OrderStatus.EXCHANGE_REQUEST)) {
+                orderDetail.setOrderStatus(OrderStatus.valueOf(orderDetail.getPreDeliveryStatus()));
             } else {
                 return ResponseDto.setFailed(ResponseMessage.NOT_RETURN_EXCHANGE);
             }
 
+            orderDetail.setPreDeliveryStatus(null);
             orderRepository.save(orderDetail.getOrder());
 
             data = new OrderCancelResponseDto(orderDetail);
@@ -323,6 +363,13 @@ public class OrderServiceImplement implements OrderService {
         if (paidAmount != expectedAmount) {
             throw new IllegalArgumentException(ResponseMessage.NO_PERMISSION);
         }
+
+        System.out.println(">>> imp_uid: " + kg.getImpUid());
+        System.out.println(">>> merchant_uid: " + kg.getMerchantUid());
+        System.out.println(">>> expected amount: " + expectedAmount);
+        System.out.println(">>> actual status: " + payStatus);
+        System.out.println(">>> actual amount: " + paidAmount);
+
     }
 
 }

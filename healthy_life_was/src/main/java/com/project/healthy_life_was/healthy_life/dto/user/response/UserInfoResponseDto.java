@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 @Data
 public class UserInfoResponseDto {
 
+    private Long userId;
     private String username;
 
     private String  name;
@@ -32,6 +33,7 @@ public class UserInfoResponseDto {
     private List<DeliverAddressDto> deliverAddressInfo;
 
     public UserInfoResponseDto(User user) {
+        this.userId = user.getUserId();
         this.username = user.getUsername();
         this.name = user.getName();
         this.userNickName = user.getUserNickName();

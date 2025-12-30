@@ -22,5 +22,6 @@ public class CartOrderRequestDto {
     @NotNull
     private Long deliverAddressId;
     private String shippingRequest;
+    @NotNull
     private KGPaymentDto kgPayment;
 }

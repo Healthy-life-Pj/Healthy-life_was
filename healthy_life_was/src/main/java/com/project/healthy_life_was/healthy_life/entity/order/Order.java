@@ -57,6 +57,7 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderDetail> orderDetails;
 
-
+    @Column(name = "order_code", unique = true, length = 24)
+    private String orderCode;
 
 }

@@ -18,4 +18,6 @@ public interface ProductService {
     ResponseDto<List<ProductListResponseDto>> getPNameProduct(String pName);
 
     ResponseDto<List<ProductListResponseDto>> getPhysiqueProduct(String username);
+
+    ResponseDto<List<ProductListResponseDto>> crawl(List<String> urls);
 }

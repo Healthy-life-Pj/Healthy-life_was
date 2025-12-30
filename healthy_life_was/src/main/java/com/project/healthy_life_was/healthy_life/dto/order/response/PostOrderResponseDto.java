@@ -21,6 +21,7 @@ public class PostOrderResponseDto {
     private int shippingCost = 3000;
     private List<OrderDetailDto> orderDetails;
     private LocalDate orderDate;
+    private String orderCode;
 //    private String paymentMethod;
 //    private String paymentTid;
 
@@ -30,8 +31,9 @@ public class PostOrderResponseDto {
         this.orderRecipientPhone = order.getOrderRecipientPhone();
         this.totalAmount = order.getOrderTotalAmount();
         this.shippingRequest = order.getShippingRequest();
-        this.shippingCost = 3000; // 혹은 order.getShippingCost()로 변경 가능
+        this.shippingCost = order.getShippingCost();
         this.orderDate = order.getOrderDate();
+        this.orderCode = order.getOrderCode();
 //        this.paymentMethod = order.getPaymentMethod();
 //        this.paymentTid = order.getPaymentTid();
         this.orderDetails = orderDetails.stream()

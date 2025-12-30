@@ -21,6 +21,9 @@ public class DirectOrderRequestDto {
     private String orderRecipientPhone;
     @NotNull
     private Long deliverAddressId;
+    @NotNull
+    private int shippingCost;
     private String shippingRequest;
+    @NotNull
     private KGPaymentDto kgPayment;
 }
