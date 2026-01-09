@@ -41,4 +41,6 @@ public class OrderDetail {
 
     @Column(name = "pre_delivery_status")
     private String preDeliveryStatus;
+
+
 }

@@ -5,8 +5,10 @@ import com.project.healthy_life_was.healthy_life.dto.order.request.CartOrderRequ
 import com.project.healthy_life_was.healthy_life.dto.order.request.DirectOrderRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.order.request.OrderDetailIdListRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.order.response.*;
+import com.project.healthy_life_was.healthy_life.dto.payment.CancelRequestDto;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public interface OrderService {
     ResponseDto<PostOrderResponseDto> cartOrder(String username, CartOrderRequestDto dto);
@@ -20,4 +22,6 @@ public interface OrderService {
     ResponseDto<OrderCancelResponseDto> cancelReturnOrExchange(String username, Long orderDetailId);
 
     ResponseDto<OrderListResponseDto> orderGetReview(String username);
+
+    ResponseDto<List<OrderCancelResponseDto>> orderCancel(String username, CancelRequestDto dto);
 }

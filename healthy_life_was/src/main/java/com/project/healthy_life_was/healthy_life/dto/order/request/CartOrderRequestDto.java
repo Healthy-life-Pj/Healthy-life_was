@@ -24,4 +24,6 @@ public class CartOrderRequestDto {
     private String shippingRequest;
     @NotNull
     private KGPaymentDto kgPayment;
+    @NotNull
+    private int shippingCost;
 }

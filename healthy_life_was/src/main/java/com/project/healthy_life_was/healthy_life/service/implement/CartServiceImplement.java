@@ -3,10 +3,7 @@ package com.project.healthy_life_was.healthy_life.service.implement;
 import com.project.healthy_life_was.healthy_life.common.constant.ResponseMessage;
 import com.project.healthy_life_was.healthy_life.dto.ResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.cart.CartItemDto;
-import com.project.healthy_life_was.healthy_life.dto.cart.request.CartAddRequestDto;
-import com.project.healthy_life_was.healthy_life.dto.cart.request.CartItemListRequestDto;
-import com.project.healthy_life_was.healthy_life.dto.cart.request.CartUpdateQuantityRequestDto;
-import com.project.healthy_life_was.healthy_life.dto.cart.request.DeleteCartItemsDto;
+import com.project.healthy_life_was.healthy_life.dto.cart.request.*;
 import com.project.healthy_life_was.healthy_life.dto.cart.response.CartAddResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.cart.response.CartDetailResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.cart.response.CartUpdateResponseDto;
@@ -131,12 +128,12 @@ public class CartServiceImplement implements CartService {
     public ResponseDto<Object> deleteCartItemIds(String username, DeleteCartItemsDto dto) {
         List<Long> cartItemIds = dto.getCartItemIds();
         if (cartItemIds == null || cartItemIds.isEmpty()) {
-            return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_DATA + "cart items");
+            return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_DATA + "cartItems");
         }
         try {
             List<CartItem> cartItems = cartItemRepository.findAllById(cartItemIds);
             if (cartItems.isEmpty()) {
-                throw new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "cartitems");
+                throw new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "cartItems");
             }
             if (cartItems.size() != cartItemIds.size()) {
                 return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_DATA + "some cart items not found");
@@ -190,7 +187,35 @@ public class CartServiceImplement implements CartService {
         } catch (Exception e) {
             return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_DATA);
         }
-            return ResponseDto.setSuccess(ResponseMessage.SUCCESS, data);
+        return ResponseDto.setSuccess(ResponseMessage.SUCCESS, data);
+    }
 
+    @Override
+    public ResponseDto<CartDetailResponseDto> getCartSelect(String username, CartSelectRequestDto dto) {
+        CartDetailResponseDto data  = null;
+
+        try {
+            if(dto == null) {
+                return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_DATA + "cartItemList");
+            }
+
+            List<CartItem> cartItems = cartItemRepository.findAllById(dto.getCartItemIds());
+            if (cartItems.isEmpty()) {
+                return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_DATA + "cartItems");
+            }
+            List<CartItemDto> cartItemDto = cartItems.stream()
+                    .map( cart -> new CartItemDto(
+                            cart.getCartItemId(),
+                            cart.getProduct().getPId(),
+                            cart.getProduct().getPName(),
+                            cart.getProductQuantity(),
+                            cart.getProductPrice(),
+                            cart.getProduct().getPImgUrl()
+                    )).toList();
+            data = new CartDetailResponseDto(cartItemDto);
+        } catch (Exception e) {
+            return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_DATA);
+        }
+        return ResponseDto.setSuccess(ResponseMessage.SUCCESS, data);
     }
 }

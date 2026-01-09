@@ -8,6 +8,7 @@ import com.project.healthy_life_was.healthy_life.dto.order.request.DirectOrderRe
 import com.project.healthy_life_was.healthy_life.dto.order.request.OrderDetailIdListRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.order.response.*;
 import com.project.healthy_life_was.healthy_life.dto.payment.ApiResponseDto;
+import com.project.healthy_life_was.healthy_life.dto.payment.CancelRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.payment.KGPaymentDto;
 import com.project.healthy_life_was.healthy_life.dto.payment.VerifyRequestDto;
 import com.project.healthy_life_was.healthy_life.entity.cart.Cart;
@@ -25,13 +26,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.awt.print.Printable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -47,82 +48,71 @@ public class OrderServiceImplement implements OrderService {
     private final DeliverAddressRepository deliverAddressRepository;
     private final KGPaymentService kgPaymentService;
 
-    private String makeOrderCode(Long id) {
-        return LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE)
-                + "-" + String.format("%06d", id);
-    }
-
     @Override
+    @Transactional
     public ResponseDto<PostOrderResponseDto> cartOrder(String username, CartOrderRequestDto dto) {
-        PostOrderResponseDto data = null;
-        List<Long> cartItemIds = dto.getCartItemIds();
-        String shippingRequest = dto.getShippingRequest();
-        String recipientName = dto.getOrderRecipientName();
-        String recipientPhone = dto.getOrderRecipientPhone();
-        Long deliverAddressId = dto.getDeliverAddressId();
+        PostOrderResponseDto data;
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "user"));
+
+        DeliverAddress deliver = deliverAddressRepository.findByDeliverAddressId(dto.getDeliverAddressId());
+        if (deliver == null || !deliver.getUser().equals(user)) {
+            throw new IllegalArgumentException(ResponseMessage.NO_PERMISSION + "deliverAddress");
+        }
+
+        List<CartItem> cartItems = cartItemRepository.findAllById(dto.getCartItemIds());
+        if (cartItems.isEmpty() || cartItems.stream().anyMatch(ci -> !ci.getCart().getUser().equals(user))) {
+            throw new IllegalArgumentException(ResponseMessage.NO_PERMISSION + "cartItems");
+        }
+
+        int totalAmount = calculateCartTotalAmount(cartItems, dto.getShippingCost());
+
+        Map<String, Object> paymentData = verifyPaymentExistOrThrow(dto.getKgPayment());
+        verifyAmountOrThrow(paymentData, totalAmount);
 
         try {
-            User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "user"));
-
-            Cart cart = cartRepository.findByUser(user)
-                    .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "cart"));
-
-            DeliverAddress deliver = deliverAddressRepository.findByDeliverAddressId(deliverAddressId);
-            if (deliver == null || !deliver.getUser().equals(user)){
-                throw new IllegalArgumentException(ResponseMessage.NO_PERMISSION + "deliverAddress");
-            }
-
-            List<CartItem> cartItems = cartItemRepository.findAllById(cartItemIds);
-            if (cartItems.isEmpty() || cartItems.stream().anyMatch(c -> !c.getCart().getUser().equals(user))) {
-                throw new IllegalArgumentException(ResponseMessage.NO_PERMISSION + "cartItems");
-            }
-
-            int totalAmount = cartItems.stream()
-                    .mapToInt(cartItem -> cartItem.getProductQuantity() * cartItem.getProduct().getPPrice())
-                    .sum() + 3000;
-            verifyPaymentOrThrow(dto.getKgPayment(), totalAmount);
-
             Order order = Order.builder()
-                    .cart(cart)
                     .user(user)
-                    .orderRecipientName(recipientName)
-                    .orderRecipientPhone(recipientPhone)
-                    .orderTotalAmount(totalAmount)
-                    .shippingRequest(shippingRequest)
                     .deliverAddress(deliver)
-                    .orderDate(LocalDate.now())
+                    .orderRecipientName(dto.getOrderRecipientName())
+                    .orderRecipientPhone(dto.getOrderRecipientPhone())
+                    .orderTotalAmount(totalAmount)
+                    .shippingRequest(dto.getShippingRequest())
+                    .orderDate(LocalDateTime.now())
+                    .orderCode(dto.getKgPayment().getMerchantUid())
+                    .impUid(dto.getKgPayment().getImpUid())
                     .build();
 
-            order.setCart(null);
-            order.setOrderCode(makeOrderCode(order.getOrderId()));
             orderRepository.save(order);
 
-            cartRepository.deleteByCartItemIds(cartItemIds);
-
             List<OrderDetail> orderDetails = cartItems.stream()
-                    .map(cartItem -> {
-                        OrderDetail orderDetail = OrderDetail.builder()
-                                .order(order)
-                                .product(cartItem.getProduct())
-                                .orderStatus(OrderStatus.PENDING)
-                                .quantity(cartItem.getProductQuantity())
-                                .price(cartItem.getProduct().getPPrice())
-                                .totalPrice(cartItem.getProductQuantity() * cartItem.getProduct().getPPrice())
-                                .build();
-                        orderDetailRepository.save(orderDetail);
-                        return orderDetail;
-                    })
-                    .collect(Collectors.toList());
+                    .map(ci -> orderDetailRepository.save(
+                            OrderDetail.builder()
+                                    .order(order)
+                                    .product(ci.getProduct())
+                                    .quantity(ci.getProductQuantity())
+                                    .price(ci.getProduct().getPPrice())
+                                    .totalPrice(ci.getProductQuantity() * ci.getProduct().getPPrice())
+                                    .orderStatus(OrderStatus.PENDING)
+                                    .build()
+                    ))
+                    .toList();
 
+            cartRepository.deleteByCartItemIds(dto.getCartItemIds());
 
             data = new PostOrderResponseDto(order, orderDetails);
+
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
+            kgPaymentService.cancel(
+                    new CancelRequestDto(dto.getKgPayment().getImpUid())
+            );
+            throw e;
         }
+
         return ResponseDto.setSuccess(ResponseMessage.SUCCESS, data);
     }
+
 
     @Override
     @Transactional
@@ -143,11 +133,7 @@ public class OrderServiceImplement implements OrderService {
                 throw new IllegalArgumentException("No permission: deliverAddress");
             }
 
-            System.out.println("Logged-in user ID: " + user.getUserId());
-            System.out.println("Deliver user ID: " + deliver.getUser().getUserId());
-
-            final int shippingCost = 3000;
-            final int totalAmount = product.getPPrice() * quantity + shippingCost;
+            final int totalAmount = product.getPPrice() * dto.getQuantity() + dto.getShippingCost();
 
             Order order = Order.builder()
                     .user(user)
@@ -156,13 +142,15 @@ public class OrderServiceImplement implements OrderService {
                     .orderRecipientPhone(dto.getOrderRecipientPhone())
                     .orderTotalAmount(totalAmount)
                     .shippingRequest(shippingRequest)
-                    .shippingCost(shippingCost)
-                    .orderDate(LocalDate.now())
+                    .shippingCost(dto.getShippingCost())
+                    .orderDate(LocalDateTime.now())
                     .build();
             order = orderRepository.save(order);
 
             String orderCode = dto.getKgPayment().getMerchantUid();
+            String impUid = dto.getKgPayment().getImpUid();
             order.setOrderCode(orderCode);
+            order.setImpUid(impUid);
             orderRepository.save(order);
 
             OrderDetail orderDetail = OrderDetail.builder()
@@ -196,12 +184,19 @@ public class OrderServiceImplement implements OrderService {
 
         try {
             List<Order> orders;
+            LocalDateTime start = startOrderDate == null
+                    ? null
+                    : startOrderDate.atStartOfDay();
+
+            LocalDateTime end = endOrderDate == null
+                    ? null
+                    : endOrderDate.plusDays(1).atStartOfDay();
 
             if ((startOrderDate == null || startOrderDate.equals("")) &&
                     (endOrderDate == null || endOrderDate.equals(""))) {
                 orders = orderRepository.findAllByUser_Username(username);
             } else {
-                orders = orderRepository.findAllByUser_usernameAndStartAndEnd(username, startOrderDate, endOrderDate);
+                orders = orderRepository.findAllByUser_usernameAndStartAndEnd(username, start, end);
             }
 
             List<OrderDto> dtos = orders.stream()
@@ -262,7 +257,7 @@ public class OrderServiceImplement implements OrderService {
                     return ResponseDto.setFailed(ResponseMessage.CAN_NOT_CHANGE_ORDER_STATUS + "CONFIRMED");
                 }
                 if (ChronoUnit.DAYS.between(orderDetail.getOrder().getOrderDate(), LocalDate.now()) >= 8) {
-                    return ResponseDto.setFailed(ResponseMessage.CAN_NOT_CHANGE_STATUS_DATE);   
+                    return ResponseDto.setFailed(ResponseMessage.CAN_NOT_CHANGE_STATUS_DATE);
                 }
 
                 orderDetail.setPreDeliveryStatus(String.valueOf(orderDetail.getOrderStatus()));
@@ -331,8 +326,57 @@ public class OrderServiceImplement implements OrderService {
         }
     }
 
-    private void verifyPaymentOrThrow(KGPaymentDto kg, int expectedAmount) {
-        if (kg == null) throw new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "kgPayment");
+    @Override
+    @Transactional
+    public ResponseDto<List<OrderCancelResponseDto>> orderCancel(String username, CancelRequestDto dto) {
+        System.out.println("OrderDto impUid = " + dto.getImpUid());
+        List<OrderCancelResponseDto> data = null;
+        List<Order> orders = orderRepository.findAllByImpUid(dto.getImpUid());
+        orders.stream()
+                .map(Order::getImpUid)
+                .forEach(impUid ->
+                        System.out.println("OrderDto impUid = " + impUid)
+                );
+
+        if (orders.isEmpty()) {
+            return ResponseDto.setFailed("주문 없음");
+        }
+
+        boolean hasNoPermission = orders.stream()
+                .anyMatch(order -> !order.getUser().getUsername().equals(username));
+
+        if (hasNoPermission) {
+            return ResponseDto.setFailed(ResponseMessage.NO_PERMISSION);
+        }
+
+        boolean cancelable = orders.stream()
+                .allMatch(order -> order.getOrderDetails().stream().allMatch(detail -> detail.getOrderStatus() == OrderStatus.PENDING));
+
+        if (!cancelable) {
+            return ResponseDto.setFailed("취소 가능한 상태가 아닙니다.");
+        }
+
+        ApiResponseDto payCancelResult = kgPaymentService.cancel(dto);
+
+        if (!"OK".equals(payCancelResult.getStatus())) {
+            return ResponseDto.setFailed("결제 취소 실패");
+        }
+
+        orders.forEach(order ->
+                        order.getOrderDetails().forEach(d -> d.setOrderStatus(OrderStatus.CANCELLED)));
+
+        data = orders.stream()
+                .flatMap(order -> order.getOrderDetails().stream())
+                .map(OrderCancelResponseDto::new)
+                .toList();
+
+        return ResponseDto.setSuccess(
+                ResponseMessage.SUCCESS, data
+        );
+    }
+
+    private Map<String, Object> verifyPaymentExistOrThrow(KGPaymentDto kg) {
+        if (kg == null) throw new IllegalArgumentException("결제 정보 없음");
 
         VerifyRequestDto req = new VerifyRequestDto();
         req.setImpUid(kg.getImpUid());
@@ -340,36 +384,27 @@ public class OrderServiceImplement implements OrderService {
 
         ApiResponseDto res = kgPaymentService.verify(req);
 
-        // 1) API 호출 성공 여부: status == "OK"
-        if (res == null || res.getStatus() == null || !"OK".equalsIgnoreCase(res.getStatus()) || res.getData() == null) {
-            throw new IllegalArgumentException(ResponseMessage.NO_PERMISSION); // 키 없으면 임시로 NO_PERMISSION 등 사용
+        if (res == null || !"OK".equalsIgnoreCase(res.getStatus()) || res.getData() == null) {
+            throw new IllegalArgumentException("결제 검증 실패");
         }
 
-        Map<String, Object> map = res.getData();
-
-        // 2) 결제 금액
-        Object amountObj = map.get("amount"); // KGPaymentService에서 넣어준 키 이름과 동일해야 함
-        if (amountObj == null) throw new IllegalArgumentException(ResponseMessage.NO_PERMISSION);
-
-        int paidAmount;
-        if (amountObj instanceof Number n) paidAmount = n.intValue();
-        else paidAmount = Integer.parseInt(String.valueOf(amountObj));
-
-        // 3) 결제 상태(예: "paid", "ready", "cancelled"...)
-        String payStatus = String.valueOf(map.get("status"));
-        if (!"paid".equalsIgnoreCase(payStatus)) {
-            throw new IllegalArgumentException(ResponseMessage.NO_PERMISSION);
-        }
-        if (paidAmount != expectedAmount) {
-            throw new IllegalArgumentException(ResponseMessage.NO_PERMISSION);
-        }
-
-        System.out.println(">>> imp_uid: " + kg.getImpUid());
-        System.out.println(">>> merchant_uid: " + kg.getMerchantUid());
-        System.out.println(">>> expected amount: " + expectedAmount);
-        System.out.println(">>> actual status: " + payStatus);
-        System.out.println(">>> actual amount: " + paidAmount);
-
+        return res.getData();
     }
+
+    private void verifyAmountOrThrow(Map<String, Object> data, int expectedAmount) {
+        int paidAmount = (int) data.get("amount");
+        if (paidAmount != expectedAmount) {
+            throw new IllegalArgumentException("결제 금액 불일치");
+        }
+    }
+
+
+    private int calculateCartTotalAmount(List<CartItem> cartItems, int shippingCost) {
+        int productTotal = cartItems.stream()
+                .mapToInt(ci -> ci.getProductQuantity() * ci.getProduct().getPPrice())
+                .sum();
+        return productTotal + shippingCost;
+    }
+
 
 }

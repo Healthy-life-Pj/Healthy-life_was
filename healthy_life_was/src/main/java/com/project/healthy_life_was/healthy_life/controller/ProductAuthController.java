@@ -2,6 +2,7 @@ package com.project.healthy_life_was.healthy_life.controller;
 
 import com.project.healthy_life_was.healthy_life.common.constant.ApiMappingPattern;
 import com.project.healthy_life_was.healthy_life.dto.ResponseDto;
+import com.project.healthy_life_was.healthy_life.dto.product.request.CrawlRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.product.response.ProductDetailResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.product.response.ProductListResponseDto;
 import com.project.healthy_life_was.healthy_life.service.ProductService;
@@ -66,8 +67,8 @@ public class ProductAuthController {
     }
 
     @PostMapping(PRODUCT_CRAWL)
-    public ResponseEntity<ResponseDto<List<ProductListResponseDto>>> crawlProduct (@RequestBody List<String> urls) {
-        ResponseDto<List<ProductListResponseDto>> response = productService.crawl(urls);
+    public ResponseEntity<ResponseDto<List<ProductListResponseDto>>> crawlProduct (@RequestBody CrawlRequestDto dto) {
+        ResponseDto<List<ProductListResponseDto>> response = productService.crawl(dto);
         HttpStatus status = response.isResult() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
         return ResponseEntity.status(status).body(response);
     }

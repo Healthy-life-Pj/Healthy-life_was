@@ -1,9 +1,6 @@
 package com.project.healthy_life_was.healthy_life.dto.payment;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.Map;
 
@@ -28,4 +25,5 @@ public class ApiResponseDto {
                 .status("FAIL")
                 .message(msg)
                 .build();
-    }}
+    }
+}

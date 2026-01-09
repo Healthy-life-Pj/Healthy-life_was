@@ -6,6 +6,7 @@ import com.project.healthy_life_was.healthy_life.dto.order.request.CartOrderRequ
 import com.project.healthy_life_was.healthy_life.dto.order.request.DirectOrderRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.order.request.OrderDetailIdListRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.order.response.*;
+import com.project.healthy_life_was.healthy_life.dto.payment.CancelRequestDto;
 import com.project.healthy_life_was.healthy_life.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping(ApiMappingPattern.ORDER)
@@ -29,6 +31,7 @@ public class OrderController {
     private final String ORDER_STATUS_PUT = "/order-status";
     private final String ORDER_PUT_CANCEL = "/cancel/{orderDetailId}";
     private final String ORDER_GET_REVIEW = "/review-writable";
+    private final String ORDER_POST_PAY_CANCEL = "/pay/cancel";
 
     @PostMapping(ORDER_POST_DIRECT)
     public ResponseEntity<ResponseDto<PostOrderResponseDto>> directOrder (
@@ -112,6 +115,20 @@ public class OrderController {
         }
         String username = userDetails.getUsername();
         ResponseDto<OrderListResponseDto> response = orderService.orderGetReview(username);
+        HttpStatus status = response.isResult() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
+        return ResponseEntity.status(status).body(response);
+    }
+
+    @PostMapping(ORDER_POST_PAY_CANCEL)
+    public ResponseEntity<ResponseDto<List<OrderCancelResponseDto>>> orderCancel (
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestBody CancelRequestDto dto
+    ) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        String username = userDetails.getUsername();
+        ResponseDto<List<OrderCancelResponseDto>> response = orderService.orderCancel(username,dto);
         HttpStatus status = response.isResult() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
         return ResponseEntity.status(status).body(response);
     }

@@ -1,12 +1,11 @@
 package com.project.healthy_life_was.healthy_life.repository;
 
 import com.project.healthy_life_was.healthy_life.entity.order.Order;
-import com.project.healthy_life_was.healthy_life.entity.order.OrderDetail;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,7 +31,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     )
     ORDER BY o.orderDate DESC
 """)
-    List<Order> findAllByUser_usernameAndStartAndEnd(String username, LocalDate startOrderDate, LocalDate endOrderDate);
+    List<Order> findAllByUser_usernameAndStartAndEnd(String username, LocalDateTime startOrderDate, LocalDateTime endOrderDate);
 
     @Query("""
     SELECT o
@@ -49,4 +48,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findDeliveredOrdersWithoutReview(String username);
 
     Optional<Order> findByOrderCode(String merchantUid);
+
+    List<Order> findAllByImpUid(String impUid);
 }

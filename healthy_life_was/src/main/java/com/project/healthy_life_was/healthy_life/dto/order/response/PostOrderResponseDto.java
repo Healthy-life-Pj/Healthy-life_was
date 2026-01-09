@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,10 +21,10 @@ public class PostOrderResponseDto {
     private String shippingRequest;
     private int shippingCost = 3000;
     private List<OrderDetailDto> orderDetails;
-    private LocalDate orderDate;
+    private LocalDateTime orderDate;
     private String orderCode;
-//    private String paymentMethod;
-//    private String paymentTid;
+    private String impUid;
+
 
     public PostOrderResponseDto(Order order, List<OrderDetail> orderDetails) {
         this.orderId = order.getOrderId();
@@ -34,11 +35,9 @@ public class PostOrderResponseDto {
         this.shippingCost = order.getShippingCost();
         this.orderDate = order.getOrderDate();
         this.orderCode = order.getOrderCode();
-//        this.paymentMethod = order.getPaymentMethod();
-//        this.paymentTid = order.getPaymentTid();
+        this.impUid = order.getImpUid();
         this.orderDetails = orderDetails.stream()
                 .map(OrderDetailDto::new)
                 .collect(Collectors.toList());
     }
-
 }

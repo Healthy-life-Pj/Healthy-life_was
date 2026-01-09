@@ -1,11 +1,11 @@
 package com.project.healthy_life_was.healthy_life.dto.order.response;
 
 import com.project.healthy_life_was.healthy_life.entity.order.OrderDetail;
+import com.project.healthy_life_was.healthy_life.entity.order.OrderStatus;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-
+import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 public class OrderCancelResponseDto {
@@ -14,21 +14,22 @@ public class OrderCancelResponseDto {
     private String username;
     private Integer totalAmount;
     private String shippingRequest;
-    private String orderStatus;
+    private OrderStatus orderStatus;
     private Long orderDetailId;
     private Long pId;
     private String pName;
     private int quantity;
     private int price;
     private int totalPrice;
-    private LocalDate orderDate;
+    private LocalDateTime orderDate;
+    private String impUid;
 
     public OrderCancelResponseDto(OrderDetail orderDetail) {
         this.orderId = orderDetail.getOrder().getOrderId();
         this.username = orderDetail.getOrder().getUser().getUsername();
         this.totalAmount = orderDetail.getOrder().getOrderTotalAmount();
         this.shippingRequest = orderDetail.getOrder().getShippingRequest();
-        this.orderStatus = String.valueOf(orderDetail.getOrderStatus());
+        this.orderStatus = orderDetail.getOrderStatus();
         this.orderDate =orderDetail.getOrder().getOrderDate();
         this.orderDetailId = orderDetail.getOrderDetailId();
         this.pId = orderDetail.getProduct().getPId();
@@ -36,5 +37,6 @@ public class OrderCancelResponseDto {
         this.quantity = orderDetail.getQuantity();
         this.price = orderDetail.getPrice();
         this.totalPrice = orderDetail.getTotalPrice();
+        this.impUid = orderDetail.getOrder().getImpUid();
     }
 }

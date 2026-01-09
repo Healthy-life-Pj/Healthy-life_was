@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,8 +22,10 @@ public class OrderDto {
     private DeliverAddress deliverAddress;
     private int shippingCost = 3000;
     private Integer totalAmount;
-    private LocalDate orderDate;
+    private LocalDateTime orderDate;
     private List<OrderDetailDto> orderDetails;
+    private String orderCode;
+    private String impUid;
 
     public OrderDto(Order order) {
         this.orderId = order.getOrderId();
@@ -31,6 +34,8 @@ public class OrderDto {
         this.shippingRequest = order.getShippingRequest();
         this.totalAmount = order.getOrderTotalAmount();
         this.orderDate = order.getOrderDate();
+        this.impUid = order.getImpUid();
+        this.orderCode = order.getOrderCode();
         this.orderDetails = order.getOrderDetails().stream()
                 .map(OrderDetailDto::new)
                 .collect(Collectors.toList());

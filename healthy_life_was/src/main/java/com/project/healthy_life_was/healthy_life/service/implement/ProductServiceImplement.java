@@ -4,6 +4,7 @@ import com.project.healthy_life_was.healthy_life.common.constant.ProductCrawler;
 import com.project.healthy_life_was.healthy_life.common.constant.ResponseMessage;
 import com.project.healthy_life_was.healthy_life.dto.ResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.product.CrawledProductDto;
+import com.project.healthy_life_was.healthy_life.dto.product.request.CrawlRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.product.response.ProductDetailResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.product.response.ProductListResponseDto;
 import com.project.healthy_life_was.healthy_life.entity.product.Product;
@@ -152,29 +153,29 @@ public class ProductServiceImplement implements ProductService {
     }
 
     @Override
-    public ResponseDto<List<ProductListResponseDto>> crawl(List<String> urls) {
+    public ResponseDto<List<ProductListResponseDto>> crawl(CrawlRequestDto dto) {
         List<ProductListResponseDto> data = new ArrayList<>();
-
+        List<String> urls = dto.getUrls();
 
         for (String url: urls) {
 
-            CrawledProductDto dto = crawler.crawl(url);
+            CrawledProductDto crawlDto = crawler.crawl(url);
 
-            if (productRepository.existsByPName(dto.getName())) {
+            if (productRepository.existsByPName(crawlDto.getName())) {
                 continue;
             }
 
             Product product = Product.builder()
-                    .pName(dto.getName())
-                    .pPrice(dto.getPrice())
-                    .pDescription(dto.getDescription())
-                    .pIngredients(dto.getIngredients())
-                    .pNutritionInfo(dto.getNutrition())
-                    .pOrigin(dto.getOrigin())
+                    .pName(crawlDto.getName())
+                    .pPrice(crawlDto.getPrice())
+                    .pDescription(crawlDto.getDescription())
+                    .pIngredients(crawlDto.getIngredients())
+                    .pNutritionInfo(crawlDto.getNutrition())
+                    .pOrigin(crawlDto.getOrigin())
                     .pUsage("냉장보관")
                     .pExpirationDate(Date.valueOf(LocalDate.now().plusMonths(6)))
                     .pManufacturer("랭킹닭컴")
-                    .pImgUrl(dto.getImageUrl())
+                    .pImgUrl(crawlDto.getImageUrl())
                     .pStockStatus(1)
                     .build();
 

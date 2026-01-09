@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -42,7 +43,7 @@ public class Order {
     private DeliverAddress deliverAddress;
 
     @Column(name = "order_date", nullable = false)
-    private LocalDate orderDate;
+    private LocalDateTime orderDate;
 
     @Column(name = "order_total_amount", nullable = false)
     private int orderTotalAmount;
@@ -59,5 +60,8 @@ public class Order {
 
     @Column(name = "order_code", unique = true, length = 24)
     private String orderCode;
+
+    @Column(name = "imp_uid", unique = true)
+    private String impUid;
 
 }

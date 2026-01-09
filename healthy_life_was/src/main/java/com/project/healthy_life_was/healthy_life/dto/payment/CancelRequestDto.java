@@ -11,7 +11,4 @@ import lombok.NoArgsConstructor;
 @Builder
 public class CancelRequestDto {
     private String impUid;
-    private String merchantUid;
-    private Long amount;
-    private String reason;
 }
