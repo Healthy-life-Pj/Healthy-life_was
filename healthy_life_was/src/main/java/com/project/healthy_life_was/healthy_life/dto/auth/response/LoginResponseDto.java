@@ -55,7 +55,7 @@ public class LoginResponseDto {
         this.exprTime = exprTime;
 
         this.deliverAddress = deliverAddressList.stream()
-                .map(address -> new DeliverAddressDto(address.getAddress(), address.getAddressDetail(), address.getPostNum()))
+                .map(address -> new DeliverAddressDto(address.getDeliverAddressId(), address.getAddress(), address.getAddressDetail(), address.getPostNum(), address.isDefault()))
                 .collect(Collectors.toList());
     }
 

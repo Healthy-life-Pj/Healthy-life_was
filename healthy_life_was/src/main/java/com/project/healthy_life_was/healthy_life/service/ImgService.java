@@ -13,7 +13,7 @@ import java.util.UUID;
 
 @Service
 public class ImgService {
-    @Value("${user.dir}")
+    @Value("${root.path}")
     private String projectPath;
 
     public String convertImgFile(MultipartFile file, String subPath) {

@@ -1,5 +1,6 @@
 package com.project.healthy_life_was.healthy_life.dto.review.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.project.healthy_life_was.healthy_life.entity.review.Review;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,6 +14,7 @@ import java.time.LocalDate;
 public class ReviewCreateResponseDto {
 
     private Long reviewId;
+    @JsonProperty("pName")
     private String pName;
     private String username;
     private Double reviewRating;

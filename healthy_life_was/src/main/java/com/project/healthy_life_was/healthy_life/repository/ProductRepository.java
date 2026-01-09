@@ -15,10 +15,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query(value = """
     SELECT p.*
-    FROM products p 
+    FROM products p
     JOIN product_category_details pcd ON pcd.p_id = p.p_id
     JOIN product_category pc ON pcd.p_category_id = pc.p_category_id
-    WHERE pc.p_category_name = :pCategoryName 
+    WHERE pc.p_category_name = :pCategoryName
 """, nativeQuery = true)
     List<Product> findByPCategoryName(@Param("pCategoryName") String pCategoryName);
 
@@ -27,7 +27,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
         FROM products p
         JOIN product_category_details pcd ON p.p_id = pcd.p_id
         JOIN product_category pc ON pcd.p_category_id = pc.p_category_id
-        WHERE pcd.p_category_details_name = :pCategoryDetailName 
+        WHERE pcd.p_category_details_name = :pCategoryDetailName
             AND pc.p_category_name = :pCategoryName
     """, nativeQuery = true)
     List<Product> findByPCategoryNameAndPCategoryDetailsName(@Param("pCategoryName") String pCategoryName, @Param("pCategoryDetailName")String pCategoryDetailName);
@@ -48,4 +48,12 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     WHERE u.user_name = :username
 """, nativeQuery = true)
     List<Product> findByUsername(@Param("username") String username);
+
+    @Query("""
+    SELECT count(p)
+    FROM Product p
+    WHERE p.pName = :pName
+    """)
+    boolean existsByPName(@Param("pName") String pName);
+
 }

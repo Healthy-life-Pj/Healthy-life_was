@@ -1,5 +1,6 @@
 package com.project.healthy_life_was.healthy_life.repository;
 
+import com.project.healthy_life_was.healthy_life.dto.order.request.OrderReviewRequestDto;
 import com.project.healthy_life_was.healthy_life.entity.order.Order;
 import com.project.healthy_life_was.healthy_life.entity.order.OrderDetail;
 import com.project.healthy_life_was.healthy_life.entity.review.Review;
@@ -15,20 +16,11 @@ import java.util.Optional;
 
 @Repository
 public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> {
-    @Query("""
-    SELECT DISTINCT od
-    FROM OrderDetail od
-    WHERE od.order.user.username = :username
-    AND (
-        (:startOrderDate IS NULL OR od.order.orderDate >= :startOrderDate)
-        AND (:endOrderDate IS NULL OR od.order.orderDate <= :endOrderDate)
-    )
-""")
-    List<OrderDetail> findAllByUser_usernameAndStartAndEnd(
-            @Param("username") String username,
-            @Param("startOrderDate") LocalDate startOrderDate,
-            @Param("endOrderDate") LocalDate endOrderDate
-    );
 
-    List<OrderDetail> findAllByOrder_User_Username(String username);
+    @Query("""
+    SELECT od From OrderDetail od
+    WHERE od.orderDetailId IN :orderDetailIds
+""")
+    List<OrderDetail> findByOrderDetailIds(@Param("orderDetailIds") List<Long> orderDetailIds);
+
 }

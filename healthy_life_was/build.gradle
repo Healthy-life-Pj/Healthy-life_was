@@ -62,6 +62,10 @@ dependencies {
 	// 스프링 이메일 기능 제공
 	implementation('org.springframework.boot:spring-boot-starter-mail')
 	implementation ('org.eclipse.angus:angus-mail:2.0.2')
+
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+	implementation 'org.jsoup:jsoup:1.17.2'
 }
 
 tasks.named('test') {

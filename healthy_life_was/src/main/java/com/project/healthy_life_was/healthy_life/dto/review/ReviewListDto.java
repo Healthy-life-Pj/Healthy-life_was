@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -22,4 +23,5 @@ public class ReviewListDto {
     private String reviewContent;
     private String reviewImgUrl;
     private LocalDate reviewCreatAt;
+    private LocalDateTime orderDate;
 }

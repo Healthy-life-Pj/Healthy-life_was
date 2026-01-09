@@ -21,4 +21,5 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     Review findByUser_UsernameAndReviewId(String username, Long reviewId);
 
     boolean existsByUser_usernameAndOrderDetail_orderDetailId(String username, Long orderDetailId);
+
 }

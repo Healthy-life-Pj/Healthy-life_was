@@ -50,6 +50,8 @@ public class ResponseMessage {
     public static final String CAN_NOT_CANCEL = "This order cannot be canceled";
     public static final String CAN_NOT_EXCHANGE = "Exchange is not available during shipping.";
     public static final String CAN_NOT_RETURN = "Return is not available during shipping.";
-    public static final String CAN_NOT_CHANGE_STATUS = "Only products purchased within 7 days can have their order status changed.";
+    public static final String CAN_NOT_CHANGE_STATUS_DATE = "Only products purchased within 7 days can have their order status changed.";
     public static final String NOT_RETURN_EXCHANGE = "The return and Exchange are not available during shipping";
+    public static final String CAN_NOT_UPDATE_CONTENT = "This QnA Content can not update because of QnA Answer.";
+    public static final String CAN_NOT_CHANGE_ORDER_STATUS = "This Order cannot be change.";
 }

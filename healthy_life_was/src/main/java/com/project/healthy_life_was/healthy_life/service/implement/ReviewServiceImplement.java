@@ -7,6 +7,7 @@ import com.project.healthy_life_was.healthy_life.dto.review.request.ReviewCreate
 import com.project.healthy_life_was.healthy_life.dto.review.request.ReviewUpdateRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.review.response.ProductReviewListResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.review.response.ReviewCreateResponseDto;
+import com.project.healthy_life_was.healthy_life.dto.review.response.ReviewResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.review.response.ReviewUpdateResponseDto;
 import com.project.healthy_life_was.healthy_life.entity.order.OrderDetail;
 import com.project.healthy_life_was.healthy_life.entity.order.OrderStatus;
@@ -22,6 +23,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -60,7 +64,7 @@ public class ReviewServiceImplement implements ReviewService {
                     .reviewImgUrl(reviewImgPath)
                     .reviewCreatAt(LocalDate.now())
                     .build();
-            if (!orderDetail.getOrder().getOrderStatus().equals(OrderStatus.DELIVERED)) {
+            if (!orderDetail.getOrderStatus().equals(OrderStatus.DELIVERED)) {
                 return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_DATA);
             }
             reviewRepository.save(review);
@@ -79,6 +83,7 @@ public class ReviewServiceImplement implements ReviewService {
         try {
             List<Review> reviews = reviewRepository.findByUser_Username(username);
             List<ReviewListDto> reviewList = reviews.stream()
+                    .sorted(Comparator.comparing(Review::getReviewCreatAt).reversed())
                     .map(review -> new ReviewListDto(
                             review.getReviewId(),
                             review.getOrderDetail().getProduct().getPName(),
@@ -88,7 +93,8 @@ public class ReviewServiceImplement implements ReviewService {
                             review.getReviewRating(),
                             review.getReviewContent(),
                             review.getReviewImgUrl(),
-                            review.getReviewCreatAt()
+                            review.getReviewCreatAt(),
+                            review.getOrderDetail().getOrder().getOrderDate()
                     ))
                     .toList();
             data = new ProductReviewListResponseDto(reviewList);
@@ -105,10 +111,15 @@ public class ReviewServiceImplement implements ReviewService {
         try {
             Review review = reviewRepository.findById(reviewId)
                     .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "review"));
-
-            review.setReviewRating(dto.getReviewRating());
-            review.setReviewContent(dto.getReviewContent());
-            review.setReviewImgUrl(dto.getReviewImgUrl());
+            if (dto.getReviewImgUrl() != null) {
+                String reviewImgPath = imgService.convertImgFile(dto.getReviewImgUrl(), "reviewImg");
+                review.setReviewImgUrl(reviewImgPath);
+            }
+            if (ChronoUnit.DAYS.between(review.getReviewCreatAt(), LocalDate.now()) <= 30) {
+                review.setReviewRating(dto.getReviewRating());
+                review.setReviewContent(dto.getReviewContent());
+            }
+            
             reviewRepository.save(review);
             data = new ReviewUpdateResponseDto(review);
         } catch (Exception e) {
@@ -156,6 +167,7 @@ public class ReviewServiceImplement implements ReviewService {
         try {
             List<Review> reviews = reviewRepository.findAll();
             List<ReviewListDto> reviewList = reviews.stream()
+                    .sorted(Comparator.comparing(Review::getReviewCreatAt).reversed())
                     .map(review -> new ReviewListDto(
                             review.getReviewId(),
                             review.getOrderDetail().getProduct().getPName(),
@@ -165,7 +177,8 @@ public class ReviewServiceImplement implements ReviewService {
                             review.getReviewRating(),
                             review.getReviewContent(),
                             review.getReviewImgUrl(),
-                            review.getReviewCreatAt()
+                            review.getReviewCreatAt(),
+                            review.getOrderDetail().getOrder().getOrderDate()
                     ))
                     .toList();
             data = new ProductReviewListResponseDto(reviewList);
@@ -182,6 +195,7 @@ public class ReviewServiceImplement implements ReviewService {
         try {
             List<Review> reviews = reviewRepository.findByOrderDetail_Product_pId(pId);
             List<ReviewListDto> reviewList = reviews.stream()
+                    .sorted(Comparator.comparing(Review::getReviewCreatAt).reversed())
                     .map(review -> new ReviewListDto(
                             review.getReviewId(),
                             review.getOrderDetail().getProduct().getPName(),
@@ -191,7 +205,8 @@ public class ReviewServiceImplement implements ReviewService {
                             review.getReviewRating(),
                             review.getReviewContent(),
                             review.getReviewImgUrl(),
-                            review.getReviewCreatAt()
+                            review.getReviewCreatAt(),
+                            review.getOrderDetail().getOrder().getOrderDate()
                     ))
                     .toList();
             data = new ProductReviewListResponseDto(reviewList);
@@ -200,5 +215,24 @@ public class ReviewServiceImplement implements ReviewService {
             e.printStackTrace();
             return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
         }
+    }
+
+    @Override
+    public ResponseDto<ReviewResponseDto> getOneReview(String username, Long reviewId) {
+        ReviewResponseDto data = null;
+        try {
+            Review review = reviewRepository.findByUser_UsernameAndReviewId(username, reviewId);
+
+            if(review == null) {
+                return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_DATA);
+            }
+
+                data = new ReviewResponseDto(review);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
+        }
+        return ResponseDto.setSuccess(ResponseMessage.SUCCESS, data);
     }
 }

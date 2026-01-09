@@ -9,4 +9,8 @@ import java.util.List;
 @Repository
 public interface DeliverAddressRepository extends JpaRepository<DeliverAddress, Long> {
     List<DeliverAddress> findByUser_UserId(Long userId);
+
+    DeliverAddress findByDeliverAddressId(Long deliverAddressId);
+
+    List<DeliverAddress> findByUser_Username(String username);
 }

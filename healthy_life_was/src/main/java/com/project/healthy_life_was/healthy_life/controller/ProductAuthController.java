@@ -2,6 +2,7 @@ package com.project.healthy_life_was.healthy_life.controller;
 
 import com.project.healthy_life_was.healthy_life.common.constant.ApiMappingPattern;
 import com.project.healthy_life_was.healthy_life.dto.ResponseDto;
+import com.project.healthy_life_was.healthy_life.dto.product.request.CrawlRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.product.response.ProductDetailResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.product.response.ProductListResponseDto;
 import com.project.healthy_life_was.healthy_life.service.ProductService;
@@ -24,6 +25,7 @@ public class ProductAuthController {
     private final String PRODUCT_GET_P_CATEGORY_ID = "/products/category";
     private final String PRODUCT_GET_CATEGORY_DETAILS = "/products/category/category-detail";
     private final String PRODUCT_GET_P_NAME = "/products/search";
+    private final String PRODUCT_CRAWL = "/crawl";
 
     @GetMapping(PRODUCT_GET_ALL)
     public ResponseEntity<ResponseDto<List<ProductListResponseDto>>> getAllProduct () {
@@ -64,4 +66,10 @@ public class ProductAuthController {
         return ResponseEntity.status(status).body(response);
     }
 
+    @PostMapping(PRODUCT_CRAWL)
+    public ResponseEntity<ResponseDto<List<ProductListResponseDto>>> crawlProduct (@RequestBody CrawlRequestDto dto) {
+        ResponseDto<List<ProductListResponseDto>> response = productService.crawl(dto);
+        HttpStatus status = response.isResult() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
+        return ResponseEntity.status(status).body(response);
+    }
 }

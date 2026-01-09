@@ -1,5 +1,6 @@
 package com.project.healthy_life_was.healthy_life.entity.deliverAddress;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.project.healthy_life_was.healthy_life.entity.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -21,6 +22,7 @@ public class DeliverAddress {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn (name = "user_id", nullable = false)
+    @JsonIgnore
     private User user;
 
     @Column (name = "address")
@@ -31,4 +33,8 @@ public class DeliverAddress {
 
     @Column (name = "post_num")
     private int postNum;
+
+    @Column (name = "is_default", nullable = false)
+    private boolean isDefault;
+
 }
