@@ -2,6 +2,9 @@ package com.project.healthy_life_was.healthy_life.config;
 
 import com.project.healthy_life_was.healthy_life.filter.JwtAuthenticationFilter;
 
+import com.project.healthy_life_was.healthy_life.handler.OAuth2FailureHandler;
+import com.project.healthy_life_was.healthy_life.handler.OAuth2SuccessHandler;
+import com.project.healthy_life_was.healthy_life.service.implement.OAuth2UserServiceImpl;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +33,6 @@ import java.util.List;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
-
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -39,6 +41,18 @@ public class WebSecurityConfig {
     @Lazy
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @Lazy
+    @Autowired
+    private OAuth2UserServiceImpl oAuth2UserService;
+
+    @Lazy
+    @Autowired
+    private OAuth2SuccessHandler oAuth2SuccessHandler;
+
+    @Lazy
+    @Autowired
+    private OAuth2FailureHandler oAuth2FailureHandler;
 
     @Bean
     public CorsFilter corsFilter() {
@@ -63,6 +77,8 @@ public class WebSecurityConfig {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(withDefaults())
+                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(
@@ -71,11 +87,18 @@ public class WebSecurityConfig {
                                 new AntPathRequestMatcher("/api/v1/wish-lists/count/**"),
                                 new AntPathRequestMatcher("/upload/**"),
                                 new AntPathRequestMatcher("/file/**"),
-                                new AntPathRequestMatcher("/oauth2/callback/**"),
+                                new AntPathRequestMatcher("/oauth2/**"),
+                                new AntPathRequestMatcher("/login/**"),
                                 new AntPathRequestMatcher("/image/**")
                         )
                         .permitAll()
                         .anyRequest().authenticated())
+                // OAuth2 로그인 설정
+                .oauth2Login(oauth2 -> oauth2
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(oAuth2UserService))
+                        .successHandler(oAuth2SuccessHandler)
+                        .failureHandler(oAuth2FailureHandler))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

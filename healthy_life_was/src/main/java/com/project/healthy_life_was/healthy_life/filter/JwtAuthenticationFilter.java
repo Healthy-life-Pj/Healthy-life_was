@@ -30,6 +30,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
+        // OAuth2 경로는 JWT 검증 스킵
+        String requestURI = request.getRequestURI();
+        if (requestURI.startsWith("/oauth2/") || requestURI.startsWith("/login/oauth2/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         try {
             String authorizationHeader = request.getHeader("Authorization");
 
