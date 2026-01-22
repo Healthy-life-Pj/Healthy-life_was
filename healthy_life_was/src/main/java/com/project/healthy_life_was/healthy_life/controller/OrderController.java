@@ -107,14 +107,14 @@ public class OrderController {
     }
 
     @GetMapping(ORDER_GET_REVIEW)
-    public ResponseEntity<ResponseDto<OrderListResponseDto>> orderGetReview (
+    public ResponseEntity<ResponseDto<List<OrderReviewResponseDto>>> orderGetReview (
             @AuthenticationPrincipal UserDetails userDetails
     ) {
         if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         String username = userDetails.getUsername();
-        ResponseDto<OrderListResponseDto> response = orderService.orderGetReview(username);
+        ResponseDto<List<OrderReviewResponseDto>> response = orderService.orderGetReview(username);
         HttpStatus status = response.isResult() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
         return ResponseEntity.status(status).body(response);
     }

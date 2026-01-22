@@ -308,18 +308,25 @@ public class OrderServiceImplement implements OrderService {
     }
 
     @Override
-    public ResponseDto<OrderListResponseDto> orderGetReview(String username) {
+    public ResponseDto<List<OrderReviewResponseDto>> orderGetReview(String username) {
 
         try {
-            List<Order> orders = orderRepository.findDeliveredOrdersWithoutReview(username);
+            LocalDateTime limitDate = LocalDateTime.now().minusDays(30);
+            List<Order> orders = orderDetailRepository.findCanCreateReviewOrders(username, limitDate);
 
-            List<OrderDto> orderList = orders.stream()
-                    .map(OrderDto::new)
-                    .collect(Collectors.toList());
+            List<OrderReviewResponseDto> data = orders.stream()
+                    .flatMap(order -> order.getOrderDetails().stream())   // ⭐ 핵심
+                    .map(od -> new OrderReviewResponseDto(
+                            od.getOrderDetailId(),
+                            od.getProduct().getPId(),
+                            od.getProduct().getPName(),
+                            od.getProduct().getPImgUrl(),
+                            od.getOrderStatus(),
+                            od.getOrder().getOrderDate()
+                    ))
+                    .toList();
 
-            OrderListResponseDto responseDto = new OrderListResponseDto(orderList);
-
-            return ResponseDto.setSuccess(ResponseMessage.SUCCESS, responseDto);
+            return ResponseDto.setSuccess(ResponseMessage.SUCCESS, data);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);

@@ -1,8 +1,11 @@
 package com.project.healthy_life_was.healthy_life.entity.order;
 
 import com.project.healthy_life_was.healthy_life.entity.product.Product;
+import com.project.healthy_life_was.healthy_life.entity.review.Review;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.List;
 
 @Entity
 @Table(name = "order_details")
@@ -41,6 +44,9 @@ public class OrderDetail {
 
     @Column(name = "pre_delivery_status")
     private String preDeliveryStatus;
+
+    @OneToOne(mappedBy = "orderDetail", cascade = CascadeType.ALL)
+    private Review review;
 
 
 }
