@@ -7,7 +7,6 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
@@ -32,22 +31,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     ORDER BY o.orderDate DESC
 """)
     List<Order> findAllByUser_usernameAndStartAndEnd(String username, LocalDateTime startOrderDate, LocalDateTime endOrderDate);
-
-    @Query("""
-    SELECT o
-    FROM Order o
-    JOIN FETCH o.orderDetails od 
-    WHERE od.orderStatus = 'DELIVERED' AND o.user.username = :username
-        AND FUNCTION('DATEDIFF', CURRENT_DATE, o.orderDate) <= 30
-        AND NOT EXISTS (
-            SELECT 1 FROM Review r
-            WHERE r.orderDetail.orderDetailId = od.orderDetailId
-                AND r.user.username = :username
-        )
-""")
-    List<Order> findDeliveredOrdersWithoutReview(String username);
-
-    Optional<Order> findByOrderCode(String merchantUid);
 
     List<Order> findAllByImpUid(String impUid);
 }
