@@ -1,6 +1,7 @@
 package com.project.healthy_life_was.healthy_life.dto.review.response;
 
 import com.project.healthy_life_was.healthy_life.dto.review.ReviewListDto;
+import com.project.healthy_life_was.healthy_life.entity.review.Review;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,5 +13,4 @@ import java.util.List;
 @AllArgsConstructor
 public class ProductReviewListResponseDto {
     private List<ReviewListDto> reviewListDto;
-
 }

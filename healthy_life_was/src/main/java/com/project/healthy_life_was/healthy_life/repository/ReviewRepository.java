@@ -1,11 +1,13 @@
 package com.project.healthy_life_was.healthy_life.repository;
 
+import com.project.healthy_life_was.healthy_life.entity.order.OrderStatus;
 import com.project.healthy_life_was.healthy_life.entity.review.Review;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -22,4 +24,11 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     boolean existsByUser_usernameAndOrderDetail_orderDetailId(String username, Long orderDetailId);
 
+    @Query("""
+        SELECT r FROM Review r
+        WHERE r.user.username = :username
+        AND r.orderDetail.orderStatus = :orderStatus
+        AND r.orderDetail.order.orderDate >= :limitDate
+""")
+    List<Review> findByUser_UsernameAndOrderDetail_OrderStatusAndLimitDate(String username, OrderStatus orderStatus, LocalDateTime limitDate);
 }

@@ -21,7 +21,7 @@ public class Review {
     @Column(name = "review_id")
     private Long reviewId;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "order_detail_id", nullable = false)
     private OrderDetail orderDetail;
 

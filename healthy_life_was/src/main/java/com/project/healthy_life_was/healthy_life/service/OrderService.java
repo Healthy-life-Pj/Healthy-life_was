@@ -21,7 +21,7 @@ public interface OrderService {
 
     ResponseDto<OrderCancelResponseDto> cancelReturnOrExchange(String username, Long orderDetailId);
 
-    ResponseDto<OrderListResponseDto> orderGetReview(String username);
+    ResponseDto<List<OrderReviewResponseDto>> orderGetReview(String username);
 
     ResponseDto<List<OrderCancelResponseDto>> orderCancel(String username, CancelRequestDto dto);
 }
