@@ -4,7 +4,7 @@ import com.project.healthy_life_was.healthy_life.filter.JwtAuthenticationFilter;
 
 import com.project.healthy_life_was.healthy_life.handler.OAuth2FailureHandler;
 import com.project.healthy_life_was.healthy_life.handler.OAuth2SuccessHandler;
-import com.project.healthy_life_was.healthy_life.service.implement.OAuth2UserServiceImpl;
+import com.project.healthy_life_was.healthy_life.service.implement.OAuth2UserServiceImplement;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +44,7 @@ public class WebSecurityConfig {
 
     @Lazy
     @Autowired
-    private OAuth2UserServiceImpl oAuth2UserService;
+    private OAuth2UserServiceImplement oAuth2UserService;
 
     @Lazy
     @Autowired
@@ -95,6 +95,10 @@ public class WebSecurityConfig {
                         .anyRequest().authenticated())
                 // OAuth2 로그인 설정
                 .oauth2Login(oauth2 -> oauth2
+                        .authorizationEndpoint(authorization -> authorization
+                                .baseUri("/oauth2/authorization"))
+                        .redirectionEndpoint(redirection -> redirection
+                                .baseUri("/oauth2/callback/*"))
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(oAuth2UserService))
                         .successHandler(oAuth2SuccessHandler)
