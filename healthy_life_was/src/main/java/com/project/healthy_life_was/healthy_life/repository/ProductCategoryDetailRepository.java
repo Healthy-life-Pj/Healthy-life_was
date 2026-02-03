@@ -11,12 +11,4 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ProductCategoryDetailRepository extends JpaRepository<ProductCategoryDetail, Long> {
 
-    @Query("""
-     SELECT pcd
-    FROM ProductCategoryDetail pcd
-    JOIN pcd.product p
-    JOIN pcd.productCategory pc
-    WHERE pcd.product.pId = :pId
-""")
-    ProductCategoryDetail findByPId(@Param("pId") Long pId);
 }

@@ -1,6 +1,7 @@
 package com.project.healthy_life_was.healthy_life.repository;
 
 import com.project.healthy_life_was.healthy_life.entity.product.Product;
+import com.project.healthy_life_was.healthy_life.entity.product.ProductCategoryDetail;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,23 +14,19 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     List<Product> findAll();
 
-    @Query(value = """
-    SELECT p.*
-    FROM products p
-    JOIN product_category_details pcd ON pcd.p_id = p.p_id
-    JOIN product_category pc ON pcd.p_category_id = pc.p_category_id
-    WHERE pc.p_category_name = :pCategoryName
-""", nativeQuery = true)
+    @Query("""
+    SELECT p
+    FROM Product p
+    WHERE p.productCategoryDetail.productCategory.pCategoryName = :pCategoryName
+""")
     List<Product> findByPCategoryName(@Param("pCategoryName") String pCategoryName);
 
-    @Query(value = """
-        SELECT p.*
-        FROM products p
-        JOIN product_category_details pcd ON p.p_id = pcd.p_id
-        JOIN product_category pc ON pcd.p_category_id = pc.p_category_id
-        WHERE pcd.p_category_details_name = :pCategoryDetailName
-            AND pc.p_category_name = :pCategoryName
-    """, nativeQuery = true)
+    @Query("""
+        SELECT p
+        FROM Product p
+        WHERE p.productCategoryDetail.pCategoryDetailName = :pCategoryDetailName
+            AND p.productCategoryDetail.productCategory.pCategoryName = :pCategoryName
+    """)
     List<Product> findByPCategoryNameAndPCategoryDetailsName(@Param("pCategoryName") String pCategoryName, @Param("pCategoryDetailName")String pCategoryDetailName);
 
     @Query("""
@@ -55,5 +52,4 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     WHERE p.pName = :pName
     """)
     boolean existsByPName(@Param("pName") String pName);
-
 }

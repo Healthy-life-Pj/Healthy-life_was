@@ -56,9 +56,9 @@ public class Product {
     @Column(name = "p_stock_status", nullable = false)
     private int pStockStatus;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonIgnore
-    private List<ProductCategoryDetail> productCategoryDetails = new ArrayList<>();
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "p_category_details_id", nullable = false)
+    private ProductCategoryDetail productCategoryDetail;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore

@@ -25,7 +25,7 @@ public class ImgService {
 
         String newImgName = UUID.randomUUID().toString() + "_" + originalFilename;
 
-        String rootPath = projectPath + "/image/";
+        String rootPath = projectPath + "/imgs/";
         String filePath = subPath + "/" + newImgName;
         File f = new File(rootPath + subPath);
 

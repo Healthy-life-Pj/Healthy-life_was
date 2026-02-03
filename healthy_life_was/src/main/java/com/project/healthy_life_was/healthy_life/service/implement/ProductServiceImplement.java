@@ -29,8 +29,6 @@ public class ProductServiceImplement implements ProductService {
 
     public final ProductRepository productRepository;
     public final ReviewRepository reviewRepository;
-    public final ProductCategoryDetailRepository productCategoryDetailRepository;
-    public final ProductCrawler crawler;
 
     @Override
     public ResponseDto<List<ProductListResponseDto>> getAllProduct() {
@@ -39,9 +37,8 @@ public class ProductServiceImplement implements ProductService {
             List<Product> products = productRepository.findAll();
             data = products.stream()
                     .map(product -> {
-                        ProductCategoryDetail productCategoryDetail = productCategoryDetailRepository.findByPId(product.getPId());
                         double averageRating = reviewRepository.findAverageRatingByProductId(product.getPId());
-                        return new ProductListResponseDto(product, averageRating, productCategoryDetail);
+                        return new ProductListResponseDto(product, averageRating, product.getProductCategoryDetail());
                     })
                     .collect(Collectors.toList());
         } catch (Exception e) {
@@ -77,9 +74,8 @@ public class ProductServiceImplement implements ProductService {
 
             data = productList.stream()
                     .map(product -> {
-                        ProductCategoryDetail productCategoryDetail = productCategoryDetailRepository.findByPId(product.getPId());
                         double averageRating = reviewRepository.findAverageRatingByProductId(product.getPId());
-                        return new ProductListResponseDto(product, averageRating, productCategoryDetail);
+                        return new ProductListResponseDto(product, averageRating, product.getProductCategoryDetail());
                     })
                     .collect(Collectors.toList());
 
@@ -97,9 +93,8 @@ public class ProductServiceImplement implements ProductService {
             List<Product> productList = productRepository.findByPCategoryNameAndPCategoryDetailsName(pCategoryName, pCategoryDetailName);
             data = productList.stream()
                     .map(product -> {
-                        ProductCategoryDetail productCategoryDetail = productCategoryDetailRepository.findByPId(product.getPId());
                         double averageRating = reviewRepository.findAverageRatingByProductId(product.getPId());
-                        return new ProductListResponseDto(product, averageRating, productCategoryDetail);
+                        return new ProductListResponseDto(product, averageRating, product.getProductCategoryDetail());
                     })
                     .collect(Collectors.toList());
         } catch (Exception e) {
@@ -117,9 +112,8 @@ public class ProductServiceImplement implements ProductService {
             List<Product> productList = productRepository.findByPName(pName);
             data = productList.stream()
                     .map(product -> {
-                        ProductCategoryDetail productCategoryDetail = productCategoryDetailRepository.findByPId(product.getPId());
                         double averageRating = reviewRepository.findAverageRatingByProductId(product.getPId());
-                        return new ProductListResponseDto(product, averageRating, productCategoryDetail);
+                        return new ProductListResponseDto(product, averageRating, product.getProductCategoryDetail());
                     })
                     .collect(Collectors.toList());
         } catch (Exception e) {
@@ -139,55 +133,14 @@ public class ProductServiceImplement implements ProductService {
             System.out.println(username);
             data = productList.stream()
                     .map(product -> {
-                        ProductCategoryDetail productCategoryDetail = productCategoryDetailRepository.findByPId(product.getPId());
                         double averageRating = reviewRepository.findAverageRatingByProductId(product.getPId());
-                        return new ProductListResponseDto(product, averageRating, productCategoryDetail);
+                        return new ProductListResponseDto(product, averageRating, product.getProductCategoryDetail());
                     })
                     .collect(Collectors.toList());
             System.out.println(data);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
-        }
-        return ResponseDto.setSuccess(ResponseMessage.SUCCESS, data);
-    }
-
-    @Override
-    public ResponseDto<List<ProductListResponseDto>> crawl(CrawlRequestDto dto) {
-        List<ProductListResponseDto> data = new ArrayList<>();
-        List<String> urls = dto.getUrls();
-
-        for (String url: urls) {
-
-            CrawledProductDto crawlDto = crawler.crawl(url);
-
-            if (productRepository.existsByPName(crawlDto.getName())) {
-                continue;
-            }
-
-            Product product = Product.builder()
-                    .pName(crawlDto.getName())
-                    .pPrice(crawlDto.getPrice())
-                    .pDescription(crawlDto.getDescription())
-                    .pIngredients(crawlDto.getIngredients())
-                    .pNutritionInfo(crawlDto.getNutrition())
-                    .pOrigin(crawlDto.getOrigin())
-                    .pUsage("냉장보관")
-                    .pExpirationDate(Date.valueOf(LocalDate.now().plusMonths(6)))
-                    .pManufacturer("랭킹닭컴")
-                    .pImgUrl(crawlDto.getImageUrl())
-                    .pStockStatus(1)
-                    .build();
-
-            productRepository.save(product);
-
-            data.add(
-                    ProductListResponseDto.from(product)
-            );
-
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException ignored) {}
         }
         return ResponseDto.setSuccess(ResponseMessage.SUCCESS, data);
     }

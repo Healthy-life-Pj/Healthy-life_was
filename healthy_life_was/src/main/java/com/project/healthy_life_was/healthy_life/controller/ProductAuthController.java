@@ -65,11 +65,4 @@ public class ProductAuthController {
         HttpStatus status = response.isResult() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
         return ResponseEntity.status(status).body(response);
     }
-
-    @PostMapping(PRODUCT_CRAWL)
-    public ResponseEntity<ResponseDto<List<ProductListResponseDto>>> crawlProduct (@RequestBody CrawlRequestDto dto) {
-        ResponseDto<List<ProductListResponseDto>> response = productService.crawl(dto);
-        HttpStatus status = response.isResult() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
-        return ResponseEntity.status(status).body(response);
-    }
 }

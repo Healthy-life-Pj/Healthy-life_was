@@ -14,6 +14,7 @@ public class CustomOAuth2User implements OAuth2User {
     private Collection<? extends GrantedAuthority> authorities;
     private boolean existed;
 
+
     public CustomOAuth2User(String name, Map<String, Object> attributes, boolean existed) {
         this.name = name;
         this.attributes = attributes;
