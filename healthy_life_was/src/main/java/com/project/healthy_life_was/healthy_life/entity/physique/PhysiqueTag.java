@@ -17,9 +17,13 @@ public class PhysiqueTag {
     private Long physiqueTagId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "p_id", nullable = true)
+    @JoinColumn(name = "p_id", nullable = false)
     private Product product;
 
     @Column(name = "physique_tag_name", nullable = false, unique = true)
     private String physiqueName;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tag_type", nullable = false)
+    private TagType tagType;
 }

@@ -14,22 +14,21 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findAll();
 
     @Query(value = """
-    SELECT p.*
-    FROM products p
-    JOIN product_category_details pcd ON pcd.p_id = p.p_id
-    JOIN product_category pc ON pcd.p_category_id = pc.p_category_id
-    WHERE pc.p_category_name = :pCategoryName
-""", nativeQuery = true)
+    SELECT p
+    FROM Product p
+    JOIN p.productCategoryDetail.productCategory pc
+    WHERE pc.pCategoryName = :pCategoryName
+""")
     List<Product> findByPCategoryName(@Param("pCategoryName") String pCategoryName);
 
-    @Query(value = """
-        SELECT p.*
-        FROM products p
-        JOIN product_category_details pcd ON p.p_id = pcd.p_id
-        JOIN product_category pc ON pcd.p_category_id = pc.p_category_id
-        WHERE pcd.p_category_details_name = :pCategoryDetailName
-            AND pc.p_category_name = :pCategoryName
-    """, nativeQuery = true)
+    @Query("""
+        SELECT p
+        FROM Product p
+        JOIN p.productCategoryDetail pcd
+        JOIN pcd.productCategory pc
+        WHERE pcd.pCategoryDetailName = :pCategoryDetailName
+        AND pc.pCategoryName = :pCategoryName
+    """)
     List<Product> findByPCategoryNameAndPCategoryDetailsName(@Param("pCategoryName") String pCategoryName, @Param("pCategoryDetailName")String pCategoryDetailName);
 
     @Query("""

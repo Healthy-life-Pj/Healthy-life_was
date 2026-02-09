@@ -39,23 +39,28 @@ public class ReviewServiceImplement implements ReviewService {
     private final UserRepository userRepository;
 
     @Override
+    @Transactional
     public ResponseDto<ReviewCreateResponseDto> createReview(String username, Long orderDetailId, ReviewCreateRequestDto dto) {
         ReviewCreateResponseDto data = null;
-
-        String reviewImgPath = null;
-
-        if (dto.getReviewImgUrl() != null && !dto.getReviewImgUrl().isEmpty()) {
-            reviewImgPath = imgService.convertImgFile(dto.getReviewImgUrl(), "reviewImg");
-        }
 
         try {
             User user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "user"));
             OrderDetail orderDetail = orderDetailRepository.findById(orderDetailId)
                     .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "orderDetail"));
-            boolean result = reviewRepository.existsByUser_usernameAndOrderDetail_orderDetailId(username, orderDetail.getOrderDetailId());
-            if(result){
-                return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_DATA + "review");
+
+            if (orderDetail.getOrderStatus() != OrderStatus.DELIVERED) {
+                return ResponseDto.setFailed("배송 완료 후 리뷰 작성 가능");
+            }
+
+            if (reviewRepository.existsByOrderDetail_OrderDetailId(orderDetailId)) {
+                return ResponseDto.setFailed("이미 리뷰가 존재합니다");
+            }
+
+            String reviewImgPath = null;
+
+            if (dto.getReviewImgUrl() != null && !dto.getReviewImgUrl().isEmpty()) {
+                reviewImgPath = imgService.convertImgFile(dto.getReviewImgUrl(), "reviewImg");
             }
             Review review = Review.builder()
                     .user(user)
@@ -134,10 +139,13 @@ public class ReviewServiceImplement implements ReviewService {
     @Transactional
     public ResponseDto<Void> deleteReview(String username, Long reviewId) {
         try{
-            Review review = reviewRepository.findByUser_UsernameAndReviewId(username, reviewId);
+            Review review = reviewRepository.findByUser_UsernameAndReviewId(username, reviewId)
+                    .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA));
             if (review == null) {
                 return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_DATA);
             }
+            OrderDetail orderDetail = review.getOrderDetail();
+            orderDetail.setReview(null);
             reviewRepository.delete(review);
         } catch (Exception e) {
             e.printStackTrace();
@@ -222,7 +230,8 @@ public class ReviewServiceImplement implements ReviewService {
     public ResponseDto<ReviewResponseDto> getOneReview(String username, Long reviewId) {
         ReviewResponseDto data = null;
         try {
-            Review review = reviewRepository.findByUser_UsernameAndReviewId(username, reviewId);
+            Review review = reviewRepository.findByUser_UsernameAndReviewId(username, reviewId)
+                    .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA));
 
             if(review == null) {
                 return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_DATA);

@@ -3,6 +3,9 @@ package com.project.healthy_life_was.healthy_life.entity.product;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "product_category_details")
 @Setter
@@ -17,14 +20,11 @@ public class ProductCategoryDetail {
     @Column(name = "p_category_details_id")
     private Long pCategoryDetailsId;
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "p_id", referencedColumnName = "p_id", nullable = false)
-//    @JsonIgnore
-    private Product product;
+    @OneToMany(mappedBy = "productCategoryDetail", cascade = CascadeType.ALL)
+    private List<Product> products = new ArrayList<>();
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "p_category_id", nullable = false)
-//    @JsonIgnore
     private ProductCategory productCategory;
 
     @Column(name = "p_category_details_name", nullable = false)
