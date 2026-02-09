@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
@@ -20,7 +21,12 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     List<Review> findByOrderDetail_Product_pId(Long pId);
 
-    Review findByUser_UsernameAndReviewId(String username, Long reviewId);
+    @Query("""
+        SELECT r FROM Review r
+        WHERE r.user.username = :username
+        AND r.reviewId = :reviewId
+""")
+    Optional<Review> findByUser_UsernameAndReviewId(String username, Long reviewId);
 
     boolean existsByUser_usernameAndOrderDetail_orderDetailId(String username, Long orderDetailId);
 
@@ -31,4 +37,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
         AND r.orderDetail.order.orderDate >= :limitDate
 """)
     List<Review> findByUser_UsernameAndOrderDetail_OrderStatusAndLimitDate(String username, OrderStatus orderStatus, LocalDateTime limitDate);
+
+    boolean existsByOrderDetail_OrderDetailId(Long orderDetailId);
 }

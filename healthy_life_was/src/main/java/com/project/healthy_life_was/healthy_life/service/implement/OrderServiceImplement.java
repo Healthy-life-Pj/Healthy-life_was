@@ -315,7 +315,7 @@ public class OrderServiceImplement implements OrderService {
             List<Order> orders = orderDetailRepository.findCanCreateReviewOrders(username, limitDate);
 
             List<OrderReviewResponseDto> data = orders.stream()
-                    .flatMap(order -> order.getOrderDetails().stream())   // ⭐ 핵심
+                    .flatMap(order -> order.getOrderDetails().stream())
                     .map(od -> new OrderReviewResponseDto(
                             od.getOrderDetailId(),
                             od.getProduct().getPId(),

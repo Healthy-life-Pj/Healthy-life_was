@@ -25,7 +25,6 @@ public class ReviewController {
 
     private final ReviewService reviewService;
 
-
     private final String REVIEW_POST = "/{orderDetailId}";
     private final String REVIEW_MINE = "/me";
     private final String REVIEW_PUT = "/update/{reviewId}";
@@ -80,6 +79,7 @@ public class ReviewController {
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable Long reviewId
     ) {
+
         if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }

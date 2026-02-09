@@ -45,7 +45,7 @@ public class OrderDetail {
     @Column(name = "pre_delivery_status")
     private String preDeliveryStatus;
 
-    @OneToOne(mappedBy = "orderDetail", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "orderDetail", orphanRemoval = true)
     private Review review;
 
 

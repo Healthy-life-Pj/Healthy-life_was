@@ -4,8 +4,11 @@ import com.project.healthy_life_was.healthy_life.common.constant.ResponseMessage
 import com.project.healthy_life_was.healthy_life.dto.ResponseDto;
 import com.project.healthy_life_was.healthy_life.convertor.PhysiqueConvertor;
 import com.project.healthy_life_was.healthy_life.dto.physique.request.PhysiqueTagAddRequestDto;
+import com.project.healthy_life_was.healthy_life.dto.physique.request.SetPhysiqueRequestDto;
+import com.project.healthy_life_was.healthy_life.dto.physique.response.PhysiqueNameResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.physique.response.PhysiqueTagResponseDto;
 import com.project.healthy_life_was.healthy_life.entity.physique.PhysiqueTag;
+import com.project.healthy_life_was.healthy_life.entity.physique.TagType;
 import com.project.healthy_life_was.healthy_life.entity.physique.UserPhysiqueTag;
 import com.project.healthy_life_was.healthy_life.entity.user.User;
 import com.project.healthy_life_was.healthy_life.repository.PhysiqueTagRepository;
@@ -15,12 +18,12 @@ import com.project.healthy_life_was.healthy_life.service.PhysiqueService;
 import com.sun.jdi.InternalException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.Response;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,77 +40,91 @@ public class PhysiqueServiceImplement implements PhysiqueService {
     }
 
     @Override
-    public ResponseDto<PhysiqueTagResponseDto> getPhysiqueTag(String username) {
-        PhysiqueTagResponseDto data = null;
-
+    public ResponseDto<PhysiqueNameResponseDto> getPhysiqueTag(String username) {
+        PhysiqueNameResponseDto data = null;
         User user = findByUsername(username);
-
-        data = new PhysiqueTagResponseDto(physiqueConvertor.convertToDtoByUserId(user.getUserId()));
-
+        data = physiqueConvertor.convertPhysiqueByUserId(user.getUserId());
         return ResponseDto.setSuccess(ResponseMessage.SUCCESS, data);
     }
 
     @Override
     @Transactional
-    public ResponseDto<PhysiqueTagResponseDto> setPhysiqueTag(String username, PhysiqueTagAddRequestDto dto) {
+    public ResponseDto<PhysiqueTagResponseDto> setPhysiqueTag(
+            String username,
+            SetPhysiqueRequestDto dto
+    ) {
         PhysiqueTagResponseDto data = null;
         User user = findByUsername(username);
-        Set<Long> tags = dto.getPhysiqueTagIds();
+        Set<String> tagNames = dto.getTagTypeNames();
 
-        for (Long tagId : tags) {
-            if (tagId == null || tagId <= 0) {
-                return ResponseDto.setFailed(ResponseMessage.VALIDATION_FAIL + "tagId");
+        if (tagNames == null || tagNames.isEmpty()) {
+            return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_DATA + "physiqueName");
+        }
+
+        if (tagNames.size() > 20) {
+            return ResponseDto.setFailed(
+                    ResponseMessage.VALIDATION_FAIL + "태그는 최대 20개까지만 선택 가능합니다"
+            );
+        }
+
+        Set<Long> requestTagId = new HashSet<>();
+
+        for (String tagName : tagNames) {
+            if (tagName == null || tagName.trim().isEmpty()) {
+                return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_DATA + "physiqueName");
             }
-            if (!physiqueTagRepository.existsById(tagId)) {
+
+            Set<PhysiqueTag> tags =
+                    physiqueTagRepository.findAllByPhysiqueName(tagName);
+
+            if (tags.isEmpty()) {
                 return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_PHYSIQUE);
             }
+
+            for (PhysiqueTag tag : tags) {
+                requestTagId.add(tag.getPhysiqueTagId());
+            }
         }
 
-        if (tags.size() > 20) {
-            return ResponseDto.setFailed(ResponseMessage.VALIDATION_FAIL + "태그는 최대 20개까지만 선택 가능합니다");
-        }
+        Set<Long> currentTags =
+                userPhysiqueTagRepository.findPhysiqueIdByUser_UserId(user.getUserId());
 
-        Set<Long> currentTags = userPhysiqueTagRepository.findByUserId(user.getUserId());
         if (currentTags == null) {
             currentTags = new HashSet<>();
         }
 
-        for(Long currentTagId : currentTags){
-            physiqueTagRepository.findById(currentTagId)
-                    .orElseThrow(() -> new InternalException(ResponseMessage.NOT_EXIST_PHYSIQUE));
+        Set<Long> tagsToAdd = new HashSet<>(requestTagId);
+        tagsToAdd.removeAll(currentTags);
+
+        Set<Long> tagsToRemove = new HashSet<>(currentTags);
+        tagsToRemove.removeAll(requestTagId);
+
+        for (Long tagId : tagsToAdd) {
+            PhysiqueTag physiqueTag = physiqueTagRepository.findById(tagId)
+                    .orElseThrow(() ->
+                            new InternalException(ResponseMessage.NOT_EXIST_PHYSIQUE));
+
+            UserPhysiqueTag newTag = UserPhysiqueTag.builder()
+                    .userPhysiqueTagId(
+                            new UserPhysiqueTag.UserPhysiqueTagId(
+                                    user.getUserId(),
+                                    physiqueTag.getPhysiqueTagId()
+                            )
+                    )
+                    .user(user)
+                    .physiqueTag(physiqueTag)
+                    .build();
+
+            userPhysiqueTagRepository.save(newTag);
         }
-
-        if(!tags.isEmpty()) {
-            Set<Long> tagsToAdd = new HashSet<>(tags);
-            tagsToAdd.removeAll(currentTags);
-
-            Set<Long> tagsToRemove = new HashSet<>(currentTags);
-            tagsToRemove.removeAll(tags);
-
-            for (Long tagId : tagsToAdd) {
-                PhysiqueTag physiqueTag = physiqueTagRepository.findById(tagId)
-                        .orElseThrow(() -> new InternalException(ResponseMessage.NOT_EXIST_PHYSIQUE));
-
-                UserPhysiqueTag newTag = UserPhysiqueTag.builder()
-                        .userPhysiqueTagId(new UserPhysiqueTag.UserPhysiqueTagId(user.getUserId(), tagId))
-                        .user(user)
-                        .physiqueTag(physiqueTag)
-                        .build();
-
-                userPhysiqueTagRepository.save(newTag);
-            }
-
-            for (Long tagId : tagsToRemove) {
-                userPhysiqueTagRepository.deleteByUserPhysiqueTagId(
-                        new UserPhysiqueTag.UserPhysiqueTagId(user.getUserId(), tagId)
-                );
-            }
-
-            data = new PhysiqueTagResponseDto(physiqueConvertor.convertToDtoByUserId(user.getUserId()));
-        } else {
-            return ResponseDto.setSuccess(ResponseMessage.SUCCESS, new PhysiqueTagResponseDto(new ArrayList<>()));
+        for (Long tagId : tagsToRemove) {
+            userPhysiqueTagRepository.deleteByUserPhysiqueTagId(
+                    new UserPhysiqueTag.UserPhysiqueTagId(user.getUserId(), tagId)
+            );
         }
-
+        data = new PhysiqueTagResponseDto(
+                physiqueConvertor.convertToDtoByUserId(user.getUserId())
+        );
         return ResponseDto.setSuccess(ResponseMessage.SUCCESS, data);
     }
 
@@ -125,11 +142,14 @@ public class PhysiqueServiceImplement implements PhysiqueService {
     public ResponseDto<Void> resetPhysiqueTag(String username) {
         User user = findByUsername(username);
         try {
-            userPhysiqueTagRepository.deleteAllByUserId(user.getUserId());
+           List<UserPhysiqueTag> userTag = userPhysiqueTagRepository.findAllByUser_UserId(user.getUserId());
+           if(userTag == null || userTag.isEmpty()) {
+               return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_DATA + "userPhysiqueTag");
+           }
+            userPhysiqueTagRepository.deleteAll(userTag);
         } catch (DataAccessException e) {
             return ResponseDto.setFailed("Database error occurred");
         }
         return ResponseDto.setSuccess(ResponseMessage.SUCCESS, null);
     }
-
 }
