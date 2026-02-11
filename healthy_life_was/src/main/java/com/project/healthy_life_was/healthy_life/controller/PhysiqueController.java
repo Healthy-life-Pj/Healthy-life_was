@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 public class PhysiqueController {
     private final String USER_CREATE_PHYSIQUE = "/create/physiques";
     private final String USER_PHYSIQUE = "/me/physiques";
-    private final String PHYSIQUE_NAME = "//physiques/name";
+    private final String PHYSIQUE_NAME = "/physiques/name";
     private final String DELETE_PHYSIQUE = "/delete/physiques";
 
     private final PhysiqueService physiqueService;
