@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -36,14 +35,14 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         if (existed) {
             String accessToken = jwtProvider.generateJwtToken(customOAuth2User.getName());
             int expirTime = jwtProvider.getExpiration();
-            response.sendRedirect("http://localhost:3000/sns-success?accessToken=" + accessToken + "&expiration= + " + expirTime);
+            response.sendRedirect("http://localhost:3000/sns-success?accessToken=" + accessToken + "&expirTime= + " + expirTime);
         }
         else {
             String snsId = (String) attributes.get("snsId");
             String joinPath = (String) attributes.get("joinPath");
             System.out.println("snsId: " + snsId);
             System.out.println("joinPath: " + joinPath);
-            response.sendRedirect("http://localhost:3000/auth?snsId=" + snsId + "&joinPath=" + joinPath);
+            response.sendRedirect("http://localhost:3000/signup?snsId=" + snsId + "&joinPath=" + joinPath);
         }
 
     }
