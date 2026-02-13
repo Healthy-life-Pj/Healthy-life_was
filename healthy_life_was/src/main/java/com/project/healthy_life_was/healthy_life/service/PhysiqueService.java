@@ -9,6 +9,6 @@ import com.project.healthy_life_was.healthy_life.dto.physique.response.PhysiqueT
 public interface PhysiqueService {
     ResponseDto<PhysiqueNameResponseDto> getPhysiqueTag(String username);
     ResponseDto<PhysiqueTagResponseDto> setPhysiqueTag(String username, SetPhysiqueRequestDto dto);
-    ResponseDto<PhysiqueTagResponseDto> getAllPhysiqueTag();
+    ResponseDto<PhysiqueNameResponseDto> getAllPhysiqueTag();
     ResponseDto<Void> resetPhysiqueTag(String username);
 }

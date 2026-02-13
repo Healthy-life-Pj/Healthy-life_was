@@ -18,4 +18,10 @@ public interface PhysiqueTagRepository extends JpaRepository<PhysiqueTag, Long> 
     Set<PhysiqueTag> findAllByPhysiqueName(String tag);
 
     List<PhysiqueTag> findAllByPhysiqueTagIdIn(Set<Long> userPhysiqueIds);
+
+    @Query("""
+    SELECT DISTINCT pt.physiqueName
+    FROM PhysiqueTag pt
+""")
+    Set<String> findAllTag();
 }

@@ -129,10 +129,10 @@ public class PhysiqueServiceImplement implements PhysiqueService {
     }
 
     @Override
-    public ResponseDto<PhysiqueTagResponseDto> getAllPhysiqueTag() {
-        PhysiqueTagResponseDto data = null;
+    public ResponseDto<PhysiqueNameResponseDto> getAllPhysiqueTag() {
+        PhysiqueNameResponseDto data = null;
 
-        data = new PhysiqueTagResponseDto(physiqueConvertor.convertAllToDto());
+        data = new PhysiqueNameResponseDto(physiqueTagRepository.findAllTag());
 
         return ResponseDto.setSuccess(ResponseMessage.SUCCESS, data);
     }
@@ -142,10 +142,10 @@ public class PhysiqueServiceImplement implements PhysiqueService {
     public ResponseDto<Void> resetPhysiqueTag(String username) {
         User user = findByUsername(username);
         try {
-           List<UserPhysiqueTag> userTag = userPhysiqueTagRepository.findAllByUser_UserId(user.getUserId());
-           if(userTag == null || userTag.isEmpty()) {
-               return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_DATA + "userPhysiqueTag");
-           }
+            List<UserPhysiqueTag> userTag = userPhysiqueTagRepository.findAllByUser_UserId(user.getUserId());
+            if(userTag == null || userTag.isEmpty()) {
+                return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_DATA + "userPhysiqueTag");
+            }
             userPhysiqueTagRepository.deleteAll(userTag);
         } catch (DataAccessException e) {
             return ResponseDto.setFailed("Database error occurred");

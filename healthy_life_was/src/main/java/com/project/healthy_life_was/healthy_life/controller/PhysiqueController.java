@@ -40,7 +40,7 @@ public class PhysiqueController {
     @GetMapping(USER_PHYSIQUE)
     public ResponseEntity<ResponseDto<PhysiqueNameResponseDto>> getPhysiqueTag (
             @AuthenticationPrincipal PrincipalUser principalUser
-            ) {
+    ) {
         String username = principalUser.getUsername();
         ResponseDto<PhysiqueNameResponseDto> response = physiqueService.getPhysiqueTag(username);
         HttpStatus status = response.isResult()? HttpStatus.OK: HttpStatus.BAD_REQUEST;
@@ -48,10 +48,10 @@ public class PhysiqueController {
     }
 
     @GetMapping(PHYSIQUE_NAME)
-    public ResponseEntity<ResponseDto<PhysiqueTagResponseDto>> getAllPhysiqueTag (
+    public ResponseEntity<ResponseDto<PhysiqueNameResponseDto>> getAllPhysiqueTag (
             @AuthenticationPrincipal PrincipalUser principalUser
     ) {
-        ResponseDto<PhysiqueTagResponseDto> response = physiqueService.getAllPhysiqueTag();
+        ResponseDto<PhysiqueNameResponseDto> response = physiqueService.getAllPhysiqueTag();
         HttpStatus status = response.isResult()? HttpStatus.OK: HttpStatus.BAD_REQUEST;
         return ResponseEntity.status(status).body(response);
     }
