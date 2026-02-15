@@ -1,6 +1,7 @@
 package com.project.healthy_life_was.healthy_life.controller;
 
 import com.project.healthy_life_was.healthy_life.common.constant.ApiMappingPattern;
+import com.project.healthy_life_was.healthy_life.common.constant.ResponseMessage;
 import com.project.healthy_life_was.healthy_life.dto.ResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.wishList.response.WishlistCountResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.wishList.response.WishlistResponseDto;
@@ -29,7 +30,14 @@ public class WishListController {
     ){
         String username = principalUser.getUsername();
         ResponseDto<WishlistResponseDto> response = wishListService.addProduct(username, pId);
-        HttpStatus status = response.isResult() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
+        HttpStatus status;
+        if (response.isResult()) {
+            status = HttpStatus.OK;
+        } else if (ResponseMessage.ALREADY_EXIST_IN_WISHLIST.equals(response.getMessage())) {
+            status = HttpStatus.CONFLICT;
+        } else {
+            status = HttpStatus.BAD_REQUEST;
+        }
         return ResponseEntity.status(status).body(response);
     }
 
