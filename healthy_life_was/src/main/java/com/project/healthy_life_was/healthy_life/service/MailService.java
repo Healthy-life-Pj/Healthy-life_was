@@ -3,6 +3,7 @@ package com.project.healthy_life_was.healthy_life.service;
 import com.project.healthy_life_was.healthy_life.common.constant.ResponseMessage;
 import com.project.healthy_life_was.healthy_life.dto.ResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.auth.request.FindIdRequestDto;
+import com.project.healthy_life_was.healthy_life.dto.auth.request.FindInfoRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.auth.response.FindIdResponseDto;
 import com.project.healthy_life_was.healthy_life.entity.user.User;
 import com.project.healthy_life_was.healthy_life.provider.JwtProvider;
@@ -78,6 +79,29 @@ public class MailService {
             }
 
         } catch (MailException e) {
+            e.printStackTrace();
+            return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
+        }
+    }
+
+    public ResponseDto<String> sendMessagePw(FindInfoRequestDto dto) throws MessagingException {
+        try {
+            Optional<User> userOptional = authRepository.findByUsernameAndUserEmail(dto.getUsername(), dto.getEmail());
+            if (userOptional.isEmpty()) {
+                return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_USER);
+            }
+            User user = userOptional.get();
+            String token = jwtProvider.generateJwtToken(user.getUsername());
+
+            MimeMessage message = createMailForPw(user.getUserEmail(), user.getUsername(), token);
+            try {
+                javaMailSender.send(message);
+                return ResponseDto.setSuccess(ResponseMessage.MESSAGE_TOKEN_SUCCESS, token);
+            } catch (MailException e) {
+                e.printStackTrace();
+                return ResponseDto.setFailed(ResponseMessage.MESSAGE_SEND_FAIL);
+            }
+        } catch (Exception e) {
             e.printStackTrace();
             return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
         }
