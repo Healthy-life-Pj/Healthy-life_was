@@ -75,6 +75,7 @@ public class WebSecurityConfig {
                                 new AntPathRequestMatcher("/image/**")
                         )
                         .permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/users/me/password/email").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

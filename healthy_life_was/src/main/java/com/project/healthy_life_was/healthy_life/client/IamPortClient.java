@@ -1,6 +1,7 @@
 package com.project.healthy_life_was.healthy_life.client;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -11,13 +12,18 @@ import java.time.Duration;
 import java.util.Map;
 
 @Component
-@RequiredArgsConstructor
 public class IamPortClient {
 
     private final WebClient webClient;
     private final IamPortProperties props;
 
     private static final Duration TIMEOUT = Duration.ofSeconds(10);
+
+    public IamPortClient(@Qualifier("iamportWebClient") WebClient webClient,
+                         IamPortProperties props) {
+        this.webClient = webClient;
+        this.props = props;
+    }
 
     public Mono<String> getAccessToken() {
         return webClient.post()
