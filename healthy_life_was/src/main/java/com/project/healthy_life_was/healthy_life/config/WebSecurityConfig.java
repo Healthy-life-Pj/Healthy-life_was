@@ -80,6 +80,7 @@ public class WebSecurityConfig {
                                 new AntPathRequestMatcher("/imgs/**")
                         )
                         .permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/users/me/password/email").permitAll()
                         .anyRequest().authenticated())
                 .oauth2Login(oauth2 -> oauth2
                         .redirectionEndpoint(endpoint ->
