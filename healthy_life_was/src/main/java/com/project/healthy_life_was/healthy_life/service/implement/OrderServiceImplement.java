@@ -370,7 +370,7 @@ public class OrderServiceImplement implements OrderService {
         }
 
         orders.forEach(order ->
-                        order.getOrderDetails().forEach(d -> d.setOrderStatus(OrderStatus.CANCELLED)));
+                order.getOrderDetails().forEach(d -> d.setOrderStatus(OrderStatus.CANCELLED)));
 
         data = orders.stream()
                 .flatMap(order -> order.getOrderDetails().stream())

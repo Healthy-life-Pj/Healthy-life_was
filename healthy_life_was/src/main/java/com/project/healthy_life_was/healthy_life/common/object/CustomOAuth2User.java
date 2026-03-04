@@ -1,42 +1,51 @@
 package com.project.healthy_life_was.healthy_life.common.object;
 
+import com.project.healthy_life_was.healthy_life.entity.user.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 public class CustomOAuth2User implements OAuth2User {
 
-    private String name;
-    private Map<String, Object> attributes;
-    private Collection<? extends GrantedAuthority> authorities;
-    private boolean existed;
+    private final User user;
+    private final Map<String, Object> attributes;
 
-    public CustomOAuth2User(String name, Map<String, Object> attributes, boolean existed) {
-        this.name = name;
+
+    public CustomOAuth2User(User user,
+                            Map<String, Object> attributes) {
+        this.user = user;
         this.attributes = attributes;
-        this.authorities = AuthorityUtils.NO_AUTHORITIES;
-        this.existed = existed;
     }
 
     @Override
     public Map<String, Object> getAttributes() {
-        return this.attributes;
+        return attributes;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return this.authorities;
+        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
     }
 
     @Override
     public String getName() {
-        return this.name;
+        return user.getUsername();
     }
 
-    public boolean isExisted() {
-        return this.existed;
+    public Long getUserId() {
+        return user.getUserId();
+    }
+
+    public String getJoinPath() {
+        return user.getJoinPath();
+    }
+
+    public String getSnsId() {
+        return user.getSnsId();
     }
 }

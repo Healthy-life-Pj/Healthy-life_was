@@ -26,12 +26,22 @@ public class JwtProvider {
         return jwtExpirationMs;
     }
 
-    public JwtProvider(@Value("${jwt.secret}") String secret, @Value("${jwt.expiration}") int jwtExpirationMs) {
+    public JwtProvider(@Value("${jwt.secret}") String secret,
+                       @Value("${jwt.expiration}") int jwtExpirationMs) {
         this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
         this.jwtExpirationMs = jwtExpirationMs;
     }
 
     public String generateJwtToken(String username) {
+        return Jwts.builder()
+                .claim("username", username)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public String createOAuthToken(String username) {
         return Jwts.builder()
                 .claim("username", username)
                 .setIssuedAt(new Date())
@@ -59,16 +69,28 @@ public class JwtProvider {
                 .compact();
     }
 
-    public String removeBearer(String bearerToken) {
-        if (bearerToken == null || !bearerToken.startsWith("Bearer ")) {
-            throw new RuntimeException("Invalid JWT token format");
-        }
-        return bearerToken.substring("Bearer ".length());
+    public Claims getClaims(String token) {
+
+        JwtParser jwtParser = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build();
+
+        return jwtParser
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
+    public String create(String username) {
+        return createOAuthToken(username);
     }
 
     public String getUsernameFromJwt(String token) {
         Claims claims = getClaims(token);
         return claims.get("username", String.class);
+    }
+
+    public String getUsernameFromSubject(String token) {
+        return getClaims(token).getSubject();
     }
 
     public String getNameFromJwt(String token) {
@@ -88,12 +110,5 @@ public class JwtProvider {
         } catch (Exception e) {
             return false;
         }
-    }
-
-    public Claims getClaims(String token) {
-        JwtParser jwtParser = Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build();
-        return jwtParser.parseClaimsJws(token).getBody();
     }
 }
