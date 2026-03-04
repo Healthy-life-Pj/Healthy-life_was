@@ -1,7 +1,9 @@
 package com.project.healthy_life_was.healthy_life.client;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -14,7 +16,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class IamPortClient {
 
-    private final WebClient webClient;
+    private final @Qualifier("iamportWebClient") WebClient webClient;
     private final IamPortProperties props;
 
     private static final Duration TIMEOUT = Duration.ofSeconds(10);
@@ -39,9 +41,13 @@ public class IamPortClient {
     @SuppressWarnings("unchecked")
     public Mono<Map<String, Object>> getPayment(String token, String impUid) {
         return webClient.get()
-                .uri("/payments/{imp_uid}", impUid)
-                .header(HttpHeaders.AUTHORIZATION, token)
+                .uri("/payments/{imp_uid}?include_sandbox=true", impUid)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                 .retrieve()
+                .onStatus(HttpStatusCode::isError, response ->
+                        response.bodyToMono(String.class)
+                                .map(body -> new RuntimeException("PortOne Error: " + body))
+                )
                 .bodyToMono(Map.class)
                 .timeout(TIMEOUT)
                 .map(root -> (Map<String, Object>) root.get("response"));
@@ -64,7 +70,7 @@ public class IamPortClient {
     public Mono<Map<String, Object>> prepare(String token, String merchantUid, long amount) {
         return webClient.post()
                 .uri("/payments/prepare")
-                .header(HttpHeaders.AUTHORIZATION, token)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(Map.of("merchant_uid", merchantUid, "amount", amount))
                 .retrieve()

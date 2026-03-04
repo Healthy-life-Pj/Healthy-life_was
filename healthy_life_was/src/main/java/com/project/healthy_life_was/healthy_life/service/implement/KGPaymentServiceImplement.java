@@ -46,13 +46,6 @@ public class KGPaymentServiceImplement implements KGPaymentService {
         return ApiResponseDto.ok(data);
     }
 
-    private static String str(Object o) { return o == null ? null : String.valueOf(o); }
-    private static long num(Object o) {
-        if (o instanceof Number n) return n.longValue();
-        return (o == null) ? 0L : Long.parseLong(String.valueOf(o));
-    }
-
-
     @Transactional
     public ApiResponseDto cancel(CancelRequestDto req) {
         String token = iamPortClient.getAccessToken().block();

@@ -78,6 +78,7 @@ public class OrderServiceImplement implements OrderService {
                     .orderRecipientName(dto.getOrderRecipientName())
                     .orderRecipientPhone(dto.getOrderRecipientPhone())
                     .orderTotalAmount(totalAmount)
+                    .shippingCost(dto.getShippingCost())
                     .shippingRequest(dto.getShippingRequest())
                     .orderDate(LocalDateTime.now())
                     .orderCode(dto.getKgPayment().getMerchantUid())
@@ -134,6 +135,9 @@ public class OrderServiceImplement implements OrderService {
             }
 
             final int totalAmount = product.getPPrice() * dto.getQuantity() + dto.getShippingCost();
+
+            Map<String, Object> paymentData = verifyPaymentExistOrThrow(dto.getKgPayment());
+            verifyAmountOrThrow(paymentData, totalAmount);
 
             Order order = Order.builder()
                     .user(user)
