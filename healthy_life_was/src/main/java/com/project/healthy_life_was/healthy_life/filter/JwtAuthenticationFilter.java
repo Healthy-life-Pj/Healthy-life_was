@@ -30,28 +30,29 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
-        try {
-            String authorizationHeader = request.getHeader("Authorization");
 
-            String token = (authorizationHeader != null && authorizationHeader.startsWith("Bearer "))
-                    ? jwtProvider.removeBearer(authorizationHeader)
-                    : null;
-            if (token == null || !jwtProvider.isValidToken(token)) {
-                filterChain.doFilter(request, response);
-                return;
+        String bearer = request.getHeader("Authorization");
+
+        if (bearer != null && bearer.startsWith("Bearer ")) {
+
+            String token = bearer.substring(7);
+
+            if (jwtProvider.isValidToken(token)) {
+
+                String username =
+                        jwtProvider.getUsernameFromJwt(token);
+                String userNickName =
+                        jwtProvider.getUserNickNameFromJwt(token);
+
+                setAuthenticationContext(request, username, userNickName);
             }
-            String username = jwtProvider.getUsernameFromJwt(token);
-            setAuthenticationContext(request, username);
-
-        } catch(Exception e) {
-            e.printStackTrace();
         }
 
         filterChain.doFilter(request, response);
     }
 
-    private void setAuthenticationContext(HttpServletRequest request, String username) {
-        userRepository.findByUsername(username).ifPresent(user -> {
+    private void setAuthenticationContext(HttpServletRequest request, String username, String userNickName) {
+        userRepository.findByUsernameAndUserNickName(username, userNickName).ifPresent(user -> {
             PrincipalUser principalUser = new PrincipalUser(user);
 
             AbstractAuthenticationToken authenticationToken

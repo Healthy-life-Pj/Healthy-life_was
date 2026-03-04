@@ -1,7 +1,6 @@
 package com.project.healthy_life_was.healthy_life.service;
 
 import com.project.healthy_life_was.healthy_life.dto.ResponseDto;
-import com.project.healthy_life_was.healthy_life.dto.product.request.CrawlRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.product.response.ProductDetailResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.product.response.ProductListResponseDto;
 
@@ -19,6 +18,4 @@ public interface ProductService {
     ResponseDto<List<ProductListResponseDto>> getPNameProduct(String pName);
 
     ResponseDto<List<ProductListResponseDto>> getPhysiqueProduct(String username);
-
-    ResponseDto<List<ProductListResponseDto>> crawl(CrawlRequestDto dto);
 }
