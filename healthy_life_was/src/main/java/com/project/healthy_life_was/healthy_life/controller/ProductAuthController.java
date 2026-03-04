@@ -25,7 +25,6 @@ public class ProductAuthController {
     private final String PRODUCT_GET_P_CATEGORY_ID = "/products/category";
     private final String PRODUCT_GET_CATEGORY_DETAILS = "/products/category/category-detail";
     private final String PRODUCT_GET_P_NAME = "/products/search";
-    private final String PRODUCT_CRAWL = "/crawl";
 
     @GetMapping(PRODUCT_GET_ALL)
     public ResponseEntity<ResponseDto<List<ProductListResponseDto>>> getAllProduct () {
@@ -62,13 +61,6 @@ public class ProductAuthController {
     @GetMapping(PRODUCT_GET_P_NAME)
     public ResponseEntity<ResponseDto<List<ProductListResponseDto>>> getPNameProduct (@RequestParam String pName) {
         ResponseDto<List<ProductListResponseDto>> response = productService.getPNameProduct(pName);
-        HttpStatus status = response.isResult() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
-        return ResponseEntity.status(status).body(response);
-    }
-
-    @PostMapping(PRODUCT_CRAWL)
-    public ResponseEntity<ResponseDto<List<ProductListResponseDto>>> crawlProduct (@RequestBody CrawlRequestDto dto) {
-        ResponseDto<List<ProductListResponseDto>> response = productService.crawl(dto);
         HttpStatus status = response.isResult() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
         return ResponseEntity.status(status).body(response);
     }

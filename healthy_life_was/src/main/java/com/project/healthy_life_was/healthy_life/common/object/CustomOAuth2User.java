@@ -41,6 +41,8 @@ public class CustomOAuth2User implements OAuth2User {
         return user.getUserId();
     }
 
+    public String getUserNickName() { return user.getUserNickName(); }
+
     public String getJoinPath() {
         return user.getJoinPath();
     }

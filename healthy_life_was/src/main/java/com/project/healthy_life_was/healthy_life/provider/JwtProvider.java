@@ -41,9 +41,10 @@ public class JwtProvider {
                 .compact();
     }
 
-    public String createOAuthToken(String username) {
+    public String createOAuthToken(String username, String userNickName) {
         return Jwts.builder()
                 .claim("username", username)
+                .claim("userNickName", userNickName)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -80,13 +81,18 @@ public class JwtProvider {
                 .getBody();
     }
 
-    public String create(String username) {
-        return createOAuthToken(username);
+    public String create(String username, String userNickName) {
+        return createOAuthToken(username, userNickName);
     }
 
     public String getUsernameFromJwt(String token) {
         Claims claims = getClaims(token);
         return claims.get("username", String.class);
+    }
+
+    public String getUserNickNameFromJwt(String token) {
+        Claims claims = getClaims(token);
+        return claims.get("userNickName", String.class);
     }
 
     public String getUsernameFromSubject(String token) {

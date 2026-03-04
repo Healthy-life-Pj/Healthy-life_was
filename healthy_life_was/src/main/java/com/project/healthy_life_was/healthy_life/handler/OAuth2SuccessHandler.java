@@ -29,8 +29,9 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                 (CustomOAuth2User) authentication.getPrincipal();
 
         String username = oAuth2User.getName();
+        String userNickname = oAuth2User.getUserNickName();
 
-        String token = jwtProvider.createOAuthToken(username);
+        String token = jwtProvider.createOAuthToken(username, userNickname);
 
         int exprTime = jwtProvider.getExpiration();
 

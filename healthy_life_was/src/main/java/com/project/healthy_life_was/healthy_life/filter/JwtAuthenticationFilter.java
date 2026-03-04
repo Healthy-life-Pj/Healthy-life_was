@@ -41,16 +41,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 String username =
                         jwtProvider.getUsernameFromJwt(token);
+                String userNickName =
+                        jwtProvider.getUserNickNameFromJwt(token);
 
-                setAuthenticationContext(request, username);
+                setAuthenticationContext(request, username, userNickName);
             }
         }
 
         filterChain.doFilter(request, response);
     }
 
-    private void setAuthenticationContext(HttpServletRequest request, String username) {
-        userRepository.findByUsername(username).ifPresent(user -> {
+    private void setAuthenticationContext(HttpServletRequest request, String username, String userNickName) {
+        userRepository.findByUsernameAndUserNickName(username, userNickName).ifPresent(user -> {
             PrincipalUser principalUser = new PrincipalUser(user);
 
             AbstractAuthenticationToken authenticationToken
