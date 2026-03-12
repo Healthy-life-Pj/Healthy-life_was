@@ -32,9 +32,10 @@ public class JwtProvider {
         this.jwtExpirationMs = jwtExpirationMs;
     }
 
-    public String generateJwtToken(String username) {
+    public String generateJwtToken(String username, String userNickName) {
         return Jwts.builder()
                 .claim("username", username)
+                .claim("userNickName", userNickName)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .signWith(key, SignatureAlgorithm.HS256)
