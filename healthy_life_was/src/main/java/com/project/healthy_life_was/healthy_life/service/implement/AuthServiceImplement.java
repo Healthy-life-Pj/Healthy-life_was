@@ -175,7 +175,7 @@ public class AuthServiceImplement implements AuthService {
                 return ResponseDto.setFailed(ResponseMessage.NOT_MATCH_PASSWORD);
             }
 
-            String token = jwtProvider.generateJwtToken(username);
+            String token = jwtProvider.generateJwtToken(username, user.getUserNickName());
             int exprTime = jwtProvider.getExpiration();
 
             List<DeliverAddressDto> deliverAddressDtoList = deliverAddressList.stream()
@@ -241,7 +241,8 @@ public class AuthServiceImplement implements AuthService {
                 javaMailSender.send(message);
                 return ResponseDto.setSuccess(ResponseMessage.SUCCESS, new FindInfoResponseDto(message, user.get().getUsername(), null));
             } else {
-                String token = jwtProvider.generateJwtToken(username);
+                User user = authRepository.findByUsername(username);
+                String token = jwtProvider.generateJwtToken(username, user.getUserNickName());
                 MimeMessage message = mailService.createMailForPw(email, username, token);
                 javaMailSender.send(message);
                 return ResponseDto.setSuccess(ResponseMessage.SUCCESS, new FindInfoResponseDto(message, null, token));

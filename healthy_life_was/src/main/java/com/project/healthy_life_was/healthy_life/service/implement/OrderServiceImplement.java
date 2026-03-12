@@ -260,7 +260,10 @@ public class OrderServiceImplement implements OrderService {
                 if (orderDetail.getOrderStatus().equals(OrderStatus.CONFIRMED)) {
                     return ResponseDto.setFailed(ResponseMessage.CAN_NOT_CHANGE_ORDER_STATUS + "CONFIRMED");
                 }
-                if (ChronoUnit.DAYS.between(orderDetail.getOrder().getOrderDate(), LocalDate.now()) >= 8) {
+                if (ChronoUnit.DAYS.between(
+                        orderDetail.getOrder().getOrderDate().toLocalDate(),
+                        LocalDate.now()
+                ) >= 8) {
                     return ResponseDto.setFailed(ResponseMessage.CAN_NOT_CHANGE_STATUS_DATE);
                 }
 

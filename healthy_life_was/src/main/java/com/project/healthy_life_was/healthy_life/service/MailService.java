@@ -91,7 +91,7 @@ public class MailService {
                 return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_USER);
             }
             User user = userOptional.get();
-            String token = jwtProvider.generateJwtToken(user.getUsername());
+            String token = jwtProvider.generateJwtToken(user.getUsername(), user.getUserNickName());
 
             MimeMessage message = createMailForPw(user.getUserEmail(), user.getUsername(), token);
             try {

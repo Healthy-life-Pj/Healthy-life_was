@@ -1,6 +1,5 @@
 package com.project.healthy_life_was.healthy_life.controller;
 
-
 import com.project.healthy_life_was.healthy_life.common.constant.ApiMappingPattern;
 import com.project.healthy_life_was.healthy_life.dto.ResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.auth.request.FindInfoRequestDto;
@@ -28,8 +27,6 @@ public class AuthController {
     private final String SIGN_UP = "/sign-up";
     private final String DUPLICATE_USERNAME = "/duplicate/username/{username}";
     private final String DUPLICATE_USER_NICKNAME = "/duplicate/userNickName/{userNickName}";
-    private final String SNS_LOGIN = "/sns-login";
-    private final String SNS_SIGN_UP = "/sns-sign-up";
     private final String RECOVERY_EMAIL = "/recovery-email";
 
     @PostMapping(SIGN_UP)
