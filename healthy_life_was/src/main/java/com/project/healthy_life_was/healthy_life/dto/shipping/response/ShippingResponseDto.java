@@ -17,6 +17,8 @@ public class ShippingResponseDto {
     private Long orderId;
     private Long shippingId;
     private int shippingTrackingNum;
+    private String shippingCarrierCode;
+    private String shippingCarrierName;
     private LocalDateTime shippingShippedAt;
     private LocalDateTime shippingDeliveredAt;
     private ShippingStatus shippingStatus;
@@ -25,8 +27,10 @@ public class ShippingResponseDto {
         this.orderId = shipping.getOrder().getOrderId();
         this.shippingId = shipping.getShippingId();
         this.shippingTrackingNum = shipping.getShippingTrackingNum();
+        this.shippingCarrierCode = shipping.getShippingCarrierCode();
+        this.shippingCarrierName = shipping.getShippingCarrierName();
         this.shippingShippedAt = shipping.getShippingShippedAt();
         this.shippingDeliveredAt = shipping.getShippingDeliveredAt();
-        this.shippingStatus = ShippingStatus.PENDING;
+        this.shippingStatus = shipping.getShippingStatus();
     }
 }

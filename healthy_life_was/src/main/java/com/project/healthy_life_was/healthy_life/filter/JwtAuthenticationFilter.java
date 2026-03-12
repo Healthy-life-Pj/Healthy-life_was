@@ -52,7 +52,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private void setAuthenticationContext(HttpServletRequest request, String username, String userNickName) {
-        userRepository.findByUsernameAndUserNickName(username, userNickName).ifPresent(user -> {
+        var optionalUser = (userNickName != null)
+                ? userRepository.findByUsernameAndUserNickName(username, userNickName)
+                : userRepository.findByUsername(username);
+
+        optionalUser.ifPresent(user -> {
             PrincipalUser principalUser = new PrincipalUser(user);
 
             AbstractAuthenticationToken authenticationToken
