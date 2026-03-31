@@ -8,15 +8,10 @@ import com.project.healthy_life_was.healthy_life.dto.user.request.UserDeleteRequ
 import com.project.healthy_life_was.healthy_life.dto.user.request.UserUpdateRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.user.response.UserInfoResponseDto;
 import com.project.healthy_life_was.healthy_life.entity.deliverAddress.DeliverAddress;
-import com.project.healthy_life_was.healthy_life.entity.order.Order;
-import com.project.healthy_life_was.healthy_life.entity.order.OrderDetail;
-import com.project.healthy_life_was.healthy_life.entity.order.OrderStatus;
 import com.project.healthy_life_was.healthy_life.entity.user.Gender;
-import com.project.healthy_life_was.healthy_life.entity.user.MemberShip;
 import com.project.healthy_life_was.healthy_life.entity.user.User;
 import com.project.healthy_life_was.healthy_life.repository.DeliverAddressRepository;
 import com.project.healthy_life_was.healthy_life.provider.JwtProvider;
-import com.project.healthy_life_was.healthy_life.repository.OrderRepository;
 import com.project.healthy_life_was.healthy_life.repository.UserRepository;
 import com.project.healthy_life_was.healthy_life.service.UserService;
 import com.sun.jdi.InternalException;
@@ -26,7 +21,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Stream;
 
 
 @Service
@@ -37,7 +31,6 @@ public class UserServiceImplement implements UserService {
     private final BCryptPasswordEncoder bCryptpasswordEncoder;
     private final JwtProvider jwtProvider;
     private final BCryptPasswordEncoder passwordEncoder;
-    private final OrderRepository orderRepository;
 
     public boolean checkPassword(String currentPassword, String encodedPassword) {
         return passwordEncoder.matches(currentPassword, encodedPassword);
@@ -48,17 +41,6 @@ public class UserServiceImplement implements UserService {
         UserInfoResponseDto data = null;
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new InternalException(ResponseMessage.NOT_EXIST_USER));
-
-        List<Order> orders = orderRepository.findByUser_Username(username);
-
-        int sumPrice = orders.stream().flatMap(o-> o.getOrderDetails().stream()).mapToInt(OrderDetail::getTotalPrice).sum();
-
-        MemberShip newGrade =  calculateGrade(sumPrice);
-
-        if (user.getUserMemberGrade() != newGrade) {
-            user.setUserMemberGrade(newGrade);
-            userRepository.save(user);
-        }
 
         data = new UserInfoResponseDto(user);
 
@@ -152,17 +134,4 @@ public class UserServiceImplement implements UserService {
 
         return ResponseDto.setSuccess(ResponseMessage.SUCCESS, null);
     }
-
-    private MemberShip calculateGrade(int sumPrice){
-        if (sumPrice >= 0 && sumPrice < 100000) {
-            return MemberShip.병아리;
-        } else if (sumPrice >= 100000 && sumPrice < 300000) {
-            return MemberShip.닭;
-        } else if (sumPrice >= 300000 && sumPrice < 600000) {
-           return MemberShip.오골계;
-        } else {
-            return MemberShip.독수리;
-        }
-    }
-
 }
