@@ -54,6 +54,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private void setAuthenticationContext(HttpServletRequest request, String username, String userNickName) {
         var optionalUser = (userNickName != null)
                 ? userRepository.findByUsernameAndUserNickName(username, userNickName)
+                .or(() -> userRepository.findByUsername(username))
                 : userRepository.findByUsername(username);
 
         optionalUser.ifPresent(user -> {
