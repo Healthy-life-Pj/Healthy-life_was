@@ -33,13 +33,4 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findAllByUser_usernameAndStartAndEnd(String username, LocalDateTime startOrderDate, LocalDateTime endOrderDate);
 
     List<Order> findAllByImpUid(String impUid);
-
-    @Query("""
-    SELECT o
-    FROM Order o
-    JOIN FETCH o.orderDetails od
-    WHERE o.user.username = :username
-    AND od.orderStatus = "DELIVERED"
-""")
-    List<Order> findByUser_Username(String username);
 }

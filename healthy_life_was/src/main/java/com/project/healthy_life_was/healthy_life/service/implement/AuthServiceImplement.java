@@ -52,6 +52,7 @@ public class AuthServiceImplement implements AuthService {
        String confirmPassword = dto.getConfirmPassword();
        String name = dto.getName();
        String userNickName = dto.getUserNickName();
+       Date userBirth = dto.getUserBirth();
        String userEmail = dto.getUserEmail();
        String userPhone = dto.getUserPhone();
        Gender userGender = dto.getUserGender();
@@ -59,9 +60,6 @@ public class AuthServiceImplement implements AuthService {
        String joinPath = dto.getJoinPath();
        String snsId = dto.getSnsId();
        String addressDetail = dto.getAddressDetail();
-
-       
-       Date userBirth = dto.getUserBirth();
        int postNum =dto.getPostNum();
 
         if (username == null || username.trim().isEmpty() || !username.matches("^(?=.*[a-zA-Z])(?=.*\\d)[a-zA-Z\\d]{8,15}$")) {
@@ -108,7 +106,7 @@ public class AuthServiceImplement implements AuthService {
            return ResponseDto.setFailed(ResponseMessage.EXIST_USER_NAME);
        }
 
-//       if (authRepository.existsByUserEmail(userEmail)) {
+//       if (authRespository.existsByUserEmail(userEmail)) {
 //           return ResponseDto.setFailed(ResponseMessage.EXIST_USER_EMAIL);
 //       }
 
