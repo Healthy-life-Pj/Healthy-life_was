@@ -12,7 +12,6 @@ import java.sql.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductDetailResponseDto {
-
     @JsonProperty("pId")
     private Long pId;
     @JsonProperty("pName")
@@ -41,7 +40,6 @@ public class ProductDetailResponseDto {
     private int pStockStatus;
 
     public ProductDetailResponseDto(Product product, double averageRating) {
-
         this.pId = product.getPId();
         this.pName = product.getPName();
         this.pPrice = product.getPPrice();

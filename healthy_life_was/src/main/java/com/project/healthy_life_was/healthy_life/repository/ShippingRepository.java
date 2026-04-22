@@ -11,7 +11,6 @@ import java.util.Optional;
 
 @Repository
 public interface ShippingRepository extends JpaRepository<Shipping, Long> {
-
     @Query(value = """
 SELECT s.*
 FROM SHIPPING s

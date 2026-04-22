@@ -18,7 +18,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class Order {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "order_id", nullable = false, updatable = false)
@@ -63,5 +62,4 @@ public class Order {
 
     @Column(name = "imp_uid", unique = true)
     private String impUid;
-
 }

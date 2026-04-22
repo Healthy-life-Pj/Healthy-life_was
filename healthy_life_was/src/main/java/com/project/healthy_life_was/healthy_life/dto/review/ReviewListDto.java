@@ -25,17 +25,4 @@ public class ReviewListDto {
     private String reviewImgUrl;
     private LocalDate reviewCreatAt;
     private LocalDateTime orderDate;
-
-    public ReviewListDto(Review review) {
-        this.reviewId = review.getReviewId();
-        this.pName = review.getOrderDetail().getProduct().getPName();
-        this.pId = review.getOrderDetail().getProduct().getPId();
-        this.pImgUrl = review.getOrderDetail().getProduct().getPImgUrl();
-        this.username = review.getUser().getUsername();
-        this.reviewRating = review.getReviewRating();
-        this.reviewContent = review.getReviewContent();
-        this.reviewImgUrl = review.getReviewImgUrl();
-        this.reviewCreatAt = review.getReviewCreatAt();
-        this.orderDate = review.getOrderDetail().getOrder().getOrderDate();
-    }
 }

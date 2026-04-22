@@ -20,7 +20,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class User {
-
     @Id
     @Column(name = "user_id", updatable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)

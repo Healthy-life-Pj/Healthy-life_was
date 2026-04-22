@@ -13,7 +13,6 @@ import java.util.Optional;
 
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
-
     @Query("SELECT COALESCE(AVG(r.reviewRating), 0) FROM Review r WHERE r.orderDetail.product.pId = :pId")
     Double findAverageRatingByProductId(@Param("pId") Long pId);
 

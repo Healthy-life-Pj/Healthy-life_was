@@ -10,7 +10,6 @@ import java.util.List;
 
 @Repository
 public interface QnaRepository extends JpaRepository<Qna, Long> {
-
     List<Qna> findAll ();
 
     List<Qna> findByUser_Username (String username);

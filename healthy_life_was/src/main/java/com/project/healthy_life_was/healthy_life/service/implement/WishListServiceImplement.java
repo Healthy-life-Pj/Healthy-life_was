@@ -19,9 +19,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import javax.swing.text.html.Option;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -49,11 +47,9 @@ public class WishListServiceImplement implements WishListService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new InternalException(ResponseMessage.NOT_EXIST_USER));
 
-        // Find product, throw exception if not found
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new InternalException(ResponseMessage.NOT_EXIST_PRODUCT));
 
-        // Check if product is already in wishlist
         if (wishListItemRepository.findByPIdAndUserId(productId, user.getUserId()).isPresent()) {
             return ResponseDto.setFailed(ResponseMessage.ALREADY_EXIST_IN_WISHLIST);
         }

@@ -2,33 +2,27 @@ package com.project.healthy_life_was.healthy_life.service.implement;
 
 import com.project.healthy_life_was.healthy_life.common.constant.ResponseMessage;
 import com.project.healthy_life_was.healthy_life.dto.ResponseDto;
-import com.project.healthy_life_was.healthy_life.dto.deliverAddress.DeliverAddressDto;
 import com.project.healthy_life_was.healthy_life.dto.user.request.PasswordUpdateRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.user.request.UserDeleteRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.user.request.UserUpdateRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.user.response.UserInfoResponseDto;
-import com.project.healthy_life_was.healthy_life.entity.deliverAddress.DeliverAddress;
 import com.project.healthy_life_was.healthy_life.entity.user.Gender;
 import com.project.healthy_life_was.healthy_life.entity.user.User;
 import com.project.healthy_life_was.healthy_life.repository.DeliverAddressRepository;
 import com.project.healthy_life_was.healthy_life.provider.JwtProvider;
 import com.project.healthy_life_was.healthy_life.repository.UserRepository;
 import com.project.healthy_life_was.healthy_life.service.UserService;
-import com.sun.jdi.InternalException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
-import java.util.List;
-
 
 @Service
 @RequiredArgsConstructor
 public class UserServiceImplement implements UserService {
     private final UserRepository userRepository;
     private final DeliverAddressRepository deliverAddressRepository;
-    private final BCryptPasswordEncoder bCryptpasswordEncoder;
     private final JwtProvider jwtProvider;
     private final BCryptPasswordEncoder passwordEncoder;
 
@@ -40,7 +34,7 @@ public class UserServiceImplement implements UserService {
     public ResponseDto<UserInfoResponseDto> getUserInfo(String username) {
         UserInfoResponseDto data = null;
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new InternalException(ResponseMessage.NOT_EXIST_USER));
+                .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_USER));
 
         data = new UserInfoResponseDto(user);
 
@@ -58,7 +52,7 @@ public class UserServiceImplement implements UserService {
         Gender inputGender = dto.getUserGender();
 
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new InternalException(ResponseMessage.NOT_EXIST_USER));
+                .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_USER));
 
         User updatedUser = user.toBuilder()
                 .name(inputName != null? inputName : user.getName())
@@ -82,7 +76,7 @@ public class UserServiceImplement implements UserService {
         String password = dto.getUserPassword();
         String confirmUserPassword = dto.getConfirmUserPassword();
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new InternalException(ResponseMessage.NOT_EXIST_USER));
+                .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_USER));
 
         if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
             return ResponseDto.setFailed(ResponseMessage.INCORRECT_CURRENT_PASSWORD);
@@ -92,7 +86,7 @@ public class UserServiceImplement implements UserService {
             return ResponseDto.setFailed(ResponseMessage.PASSWORD_MISMATCH);
         }
 
-        String encodePassword = bCryptpasswordEncoder.encode(password);
+        String encodePassword = passwordEncoder.encode(password);
         User updatedUser = user.toBuilder()
                 .password(encodePassword)
                 .build();
@@ -107,13 +101,13 @@ public class UserServiceImplement implements UserService {
         String confirmUserPassword = dto.getConfirmUserPassword();
         String username = jwtProvider.getUsernameFromJwt(token);
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new InternalException(ResponseMessage.NOT_EXIST_USER));
+                .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_USER));
 
         if (!password.equals(confirmUserPassword)) {
             return ResponseDto.setFailed(ResponseMessage.PASSWORD_MISMATCH);
         }
 
-        String encodePassword = bCryptpasswordEncoder.encode(password);
+        String encodePassword = passwordEncoder.encode(password);
         User updatedUser = user.toBuilder()
                 .password(encodePassword)
                 .build();
@@ -125,7 +119,7 @@ public class UserServiceImplement implements UserService {
     @Override
     public ResponseDto<Void> deleteUser(String username, UserDeleteRequestDto dto) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new InternalException(ResponseMessage.NOT_EXIST_USER));
+                .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_USER));
 
         if (!passwordEncoder.matches(dto.getUserPassword(), user.getPassword())) {
             return ResponseDto.setFailed(ResponseMessage.NOT_MATCH_PASSWORD);

@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImplement implements ProductService {
-
     public final ProductRepository productRepository;
     public final ReviewRepository reviewRepository;
     public final ProductCategoryDetailRepository productCategoryDetailRepository;

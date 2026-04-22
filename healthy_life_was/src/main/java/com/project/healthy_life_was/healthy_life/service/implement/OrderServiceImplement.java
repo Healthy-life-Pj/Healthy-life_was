@@ -148,14 +148,10 @@ public class OrderServiceImplement implements OrderService {
                     .shippingRequest(shippingRequest)
                     .shippingCost(dto.getShippingCost())
                     .orderDate(LocalDateTime.now())
+                    .orderCode(dto.getKgPayment().getMerchantUid())
+                    .impUid(dto.getKgPayment().getImpUid())
                     .build();
             order = orderRepository.save(order);
-
-            String orderCode = dto.getKgPayment().getMerchantUid();
-            String impUid = dto.getKgPayment().getImpUid();
-            order.setOrderCode(orderCode);
-            order.setImpUid(impUid);
-            orderRepository.save(order);
 
             OrderDetail orderDetail = OrderDetail.builder()
                     .order(order)
@@ -343,14 +339,8 @@ public class OrderServiceImplement implements OrderService {
     @Override
     @Transactional
     public ResponseDto<List<OrderCancelResponseDto>> orderCancel(String username, CancelRequestDto dto) {
-        System.out.println("OrderDto impUid = " + dto.getImpUid());
         List<OrderCancelResponseDto> data = null;
         List<Order> orders = orderRepository.findAllByImpUid(dto.getImpUid());
-        orders.stream()
-                .map(Order::getImpUid)
-                .forEach(impUid ->
-                        System.out.println("OrderDto impUid = " + impUid)
-                );
 
         if (orders.isEmpty()) {
             return ResponseDto.setFailed("주문 없음");

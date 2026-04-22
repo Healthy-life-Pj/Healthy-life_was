@@ -10,7 +10,6 @@ import java.util.List;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
-
     List<Product> findAll();
 
     @Query(value = """
@@ -54,5 +53,4 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     WHERE p.pName = :pName
     """)
     boolean existsByPName(@Param("pName") String pName);
-
 }

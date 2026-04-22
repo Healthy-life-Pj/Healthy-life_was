@@ -10,7 +10,6 @@ import org.springframework.web.multipart.MultipartFile;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReviewCreateRequestDto {
-
     @NotNull
     private Double reviewRating;
     @NotNull
