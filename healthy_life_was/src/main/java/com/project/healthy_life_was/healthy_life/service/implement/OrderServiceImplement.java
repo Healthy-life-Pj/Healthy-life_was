@@ -17,6 +17,9 @@ import com.project.healthy_life_was.healthy_life.entity.deliverAddress.DeliverAd
 import com.project.healthy_life_was.healthy_life.entity.order.Order;
 import com.project.healthy_life_was.healthy_life.entity.order.OrderDetail;
 import com.project.healthy_life_was.healthy_life.entity.order.OrderStatus;
+import com.project.healthy_life_was.healthy_life.entity.payment.Payment;
+import com.project.healthy_life_was.healthy_life.entity.payment.PaymentMethod;
+import com.project.healthy_life_was.healthy_life.entity.payment.PaymentStatus;
 import com.project.healthy_life_was.healthy_life.entity.product.Product;
 import com.project.healthy_life_was.healthy_life.entity.user.User;
 import com.project.healthy_life_was.healthy_life.repository.*;
@@ -47,6 +50,7 @@ public class OrderServiceImplement implements OrderService {
     private final ProductRepository productRepository;
     private final DeliverAddressRepository deliverAddressRepository;
     private final KGPaymentService kgPaymentService;
+    private final PaymentRepository paymentRepository;
 
     @Override
     @Transactional
@@ -68,10 +72,24 @@ public class OrderServiceImplement implements OrderService {
 
         int totalAmount = calculateCartTotalAmount(cartItems, dto.getShippingCost());
 
-        Map<String, Object> paymentData = verifyPaymentExistOrThrow(dto.getKgPayment());
-        verifyAmountOrThrow(paymentData, totalAmount);
+        PaymentMethod method = null;
+        String status = null;
 
         try {
+            Map<String, Object> paymentData = verifyPaymentExistOrThrow(dto.getKgPayment());
+            verifyAmountOrThrow(paymentData, totalAmount);
+
+            method = (PaymentMethod) paymentData.get("payment_method_enum");
+            status = (String) paymentData.get("status");
+
+            PaymentStatus paymentStatus;
+
+            if ("paid".equalsIgnoreCase(status)) {
+                paymentStatus = PaymentStatus.COMPLETED;
+            } else {
+                throw new RuntimeException("결제 완료 상태 아님");
+            }
+
             Order order = Order.builder()
                     .user(user)
                     .deliverAddress(deliver)
@@ -99,16 +117,23 @@ public class OrderServiceImplement implements OrderService {
                                     .build()
                     ))
                     .toList();
+            paymentRepository.save(
+                    Payment.builder()
+                            .order(order)
+                            .user(user)
+                            .paymentMethod(method)
+                            .paymentDate(LocalDateTime.now())
+                            .paymentStatus(paymentStatus)
+                            .build()
+            );
 
             cartRepository.deleteByCartItemIds(dto.getCartItemIds());
 
             data = new PostOrderResponseDto(order, orderDetails);
 
         } catch (Exception e) {
-            kgPaymentService.cancel(
-                    new CancelRequestDto(dto.getKgPayment().getImpUid())
-            );
-            throw e;
+            e.printStackTrace();
+            return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
         }
 
         return ResponseDto.setSuccess(ResponseMessage.SUCCESS, data);
@@ -118,13 +143,17 @@ public class OrderServiceImplement implements OrderService {
     @Override
     @Transactional
     public ResponseDto<PostOrderResponseDto> directOrder(String username, Long pId, DirectOrderRequestDto dto) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "user"));
+
+        PaymentMethod method = null;
+        String status = null;
+
         try {
             int quantity = Math.max(dto.getQuantity(), 1);
             String shippingRequest = (dto.getShippingRequest() == null || dto.getShippingRequest().isBlank())
                     ? "요청사항 없음" : dto.getShippingRequest();
 
-            User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "user"));
 
             Product product = productRepository.findById(pId)
                     .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "product"));
@@ -138,6 +167,9 @@ public class OrderServiceImplement implements OrderService {
 
             Map<String, Object> paymentData = verifyPaymentExistOrThrow(dto.getKgPayment());
             verifyAmountOrThrow(paymentData, totalAmount);
+
+            method = (PaymentMethod) paymentData.get("payment_method_enum");
+            status = (String) paymentData.get("status");
 
             Order order = Order.builder()
                     .user(user)
@@ -168,6 +200,26 @@ public class OrderServiceImplement implements OrderService {
                     .build();
             orderDetailRepository.save(orderDetail);
 
+            PaymentStatus paymentStatus;
+
+            if ("paid".equalsIgnoreCase(status)) {
+                paymentStatus = PaymentStatus.COMPLETED;
+            } else {
+                throw new RuntimeException("결제 완료 상태 아님");
+            }
+
+            paymentRepository.save(
+                    Payment.builder()
+                            .order(order)
+                            .user(user)
+                            .paymentMethod(method)
+                            .paymentDate(LocalDateTime.now())
+                            .paymentStatus(paymentStatus)
+                            .build()
+            );
+            System.out.println(method);
+            System.out.println(paymentStatus);
+
             List<OrderDetail> orderDetails = List.of(orderDetail);
             PostOrderResponseDto data = new PostOrderResponseDto(order, orderDetails);
             return ResponseDto.setSuccess(ResponseMessage.SUCCESS, data);
@@ -175,7 +227,6 @@ public class OrderServiceImplement implements OrderService {
         } catch (IllegalArgumentException e) {
             return ResponseDto.setFailed(e.getMessage());
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
         }
     }
@@ -304,7 +355,6 @@ public class OrderServiceImplement implements OrderService {
 
             orderDetail.setPreDeliveryStatus(null);
             orderRepository.save(orderDetail.getOrder());
-
             data = new OrderCancelResponseDto(orderDetail);
         } catch (Exception e) {
             e.printStackTrace();
@@ -346,6 +396,9 @@ public class OrderServiceImplement implements OrderService {
         System.out.println("OrderDto impUid = " + dto.getImpUid());
         List<OrderCancelResponseDto> data = null;
         List<Order> orders = orderRepository.findAllByImpUid(dto.getImpUid());
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "user"));
+
         orders.stream()
                 .map(Order::getImpUid)
                 .forEach(impUid ->
@@ -383,6 +436,9 @@ public class OrderServiceImplement implements OrderService {
                 .flatMap(order -> order.getOrderDetails().stream())
                 .map(OrderCancelResponseDto::new)
                 .toList();
+
+        Payment payment = paymentRepository.findByUser_UserIdAndOrder_ImpUid(user.getUserId(), dto.getImpUid());
+        payment.setPaymentStatus(PaymentStatus.REFUNDED);
 
         return ResponseDto.setSuccess(
                 ResponseMessage.SUCCESS, data
