@@ -3,6 +3,7 @@ package com.project.healthy_life_was.healthy_life.entity.user;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.project.healthy_life_was.healthy_life.entity.deliverAddress.DeliverAddress;
+import com.project.healthy_life_was.healthy_life.entity.payment.Payment;
 import com.project.healthy_life_was.healthy_life.entity.whishList.WishList;
 import jakarta.persistence.*;
 import lombok.*;
@@ -58,7 +59,7 @@ public class User {
     @Column(nullable = false)
     private MemberShip userMemberGrade = MemberShip.병아리;
 
-    @Column(nullable = false, length = 5, columnDefinition = "VARCHAR(5) COMMENT '가입 경로 (HOME, KAKAO, NAVER)'")
+    @Column(nullable = false, length = 5, columnDefinition = "VARCHAR(5) COMMENT '가입 경로 (HOME, NAVER)'")
     private String joinPath;
 
     @PrePersist
@@ -70,6 +71,9 @@ public class User {
 
     @Column(nullable = true, columnDefinition = "VARCHAR(255) COMMENT 'OAuth2 사용자 아이디'")
     private String snsId;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Payment> payments;
 
     @Builder.Default
     @JsonManagedReference

@@ -19,7 +19,7 @@ public class ReviewListDto {
     @JsonProperty("pId")
     private Long pId;
     private String pImgUrl;
-    private String username;
+    private String userNickName;
     private Double reviewRating;
     private String reviewContent;
     private String reviewImgUrl;
@@ -31,7 +31,7 @@ public class ReviewListDto {
         this.pName = review.getOrderDetail().getProduct().getPName();
         this.pId = review.getOrderDetail().getProduct().getPId();
         this.pImgUrl = review.getOrderDetail().getProduct().getPImgUrl();
-        this.username = review.getUser().getUsername();
+        this.userNickName = review.getUser().getUserNickName();
         this.reviewRating = review.getReviewRating();
         this.reviewContent = review.getReviewContent();
         this.reviewImgUrl = review.getReviewImgUrl();

@@ -2,6 +2,7 @@ package com.project.healthy_life_was.healthy_life.entity.order;
 
 import com.project.healthy_life_was.healthy_life.entity.cart.Cart;
 import com.project.healthy_life_was.healthy_life.entity.deliverAddress.DeliverAddress;
+import com.project.healthy_life_was.healthy_life.entity.payment.Payment;
 import com.project.healthy_life_was.healthy_life.entity.user.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -57,6 +58,9 @@ public class Order {
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderDetail> orderDetails;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    private List<Payment> payments;
 
     @Column(name = "order_code", unique = true, length = 24)
     private String orderCode;

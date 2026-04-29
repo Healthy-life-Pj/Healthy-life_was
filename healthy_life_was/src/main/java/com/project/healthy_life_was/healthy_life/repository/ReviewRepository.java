@@ -30,13 +30,5 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     boolean existsByUser_usernameAndOrderDetail_orderDetailId(String username, Long orderDetailId);
 
-    @Query("""
-        SELECT r FROM Review r
-        WHERE r.user.username = :username
-        AND r.orderDetail.orderStatus = :orderStatus
-        AND r.orderDetail.order.orderDate >= :limitDate
-""")
-    List<Review> findByUser_UsernameAndOrderDetail_OrderStatusAndLimitDate(String username, OrderStatus orderStatus, LocalDateTime limitDate);
-
     boolean existsByOrderDetail_OrderDetailId(Long orderDetailId);
 }

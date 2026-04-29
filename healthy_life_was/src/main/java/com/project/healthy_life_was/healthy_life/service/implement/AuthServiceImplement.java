@@ -106,9 +106,9 @@ public class AuthServiceImplement implements AuthService {
            return ResponseDto.setFailed(ResponseMessage.EXIST_USER_NAME);
        }
 
-//       if (authRespository.existsByUserEmail(userEmail)) {
-//           return ResponseDto.setFailed(ResponseMessage.EXIST_USER_EMAIL);
-//       }
+       if (authRepository.existsByUserEmail(userEmail)) {
+           return ResponseDto.setFailed(ResponseMessage.EXIST_USER_EMAIL);
+       }
 
        if (authRepository.existsByUserNickName(userNickName)) {
            return ResponseDto.setFailed(ResponseMessage.EXIST_USER_NICK_NAME);

@@ -44,37 +44,7 @@ public class OAuth2UserServiceImplement
         String birthyear = null;
         String birthday = null;
 
-        // 🔵 KAKAO
-        if ("kakao".equals(registrationId)) {
-
-            Object idObj = attributes.get("id");
-            if (idObj instanceof Long id) {
-                snsId = String.valueOf(id);
-                username = "kakao_" + snsId;
-            } else {
-                snsId = null;
-                username = null;
-            }
-
-            Object kakaoAccountObj = attributes.get("kakao_account");
-            if (kakaoAccountObj instanceof Map<?, ?> kakaoAccount) {
-
-                Object profileObj = kakaoAccount.get("profile");
-                if (profileObj instanceof Map<?, ?> profile) {
-                    nickname = (String) profile.get("profile_nickname");
-                }
-
-                name = (String) kakaoAccount.get("name");
-                email = (String) kakaoAccount.get("email");
-                phone = (String) kakaoAccount.get("phone_number");
-                genderStr = (String) kakaoAccount.get("gender");
-                birthyear = (String) kakaoAccount.get("birthyear");
-                birthday = (String) kakaoAccount.get("birthday");
-            }
-        }
-
-        // 🟢 NAVER
-        else if ("naver".equals(registrationId)) {
+       if ("naver".equals(registrationId)) {
 
             Object responseObj = attributes.get("response");
             if (responseObj instanceof Map<?, ?> response) {
@@ -102,39 +72,18 @@ public class OAuth2UserServiceImplement
             throw new OAuth2AuthenticationException("SNS username 생성 실패");
         }
 
-        if (nickname == null || nickname.isBlank()) {
-            nickname = name;
-        }
-
-        if (name == null) {
-            name = nickname;
-        }
-
-        if (email == null) {
-            email = username + "@sns.local";
-        }
-
-        if (phone == null) {
-            phone = "000-0000-0000";
-        }
-
         Date birthDate = new Date();
 
         try {
             if (birthyear != null && birthday != null) {
 
-                String month;
-                String day;
+                String month = "";
+                String day = "";
 
                 if (birthday.contains("-")) {
-                    // NAVER 형식 MM-DD
                     String[] parts = birthday.split("-");
                     month = parts[0];
                     day = parts[1];
-                } else {
-                    // KAKAO 형식 MMDD
-                    month = birthday.substring(0, 2);
-                    day = birthday.substring(2, 4);
                 }
 
                 String fullDate = birthyear + "-" + month + "-" + day;

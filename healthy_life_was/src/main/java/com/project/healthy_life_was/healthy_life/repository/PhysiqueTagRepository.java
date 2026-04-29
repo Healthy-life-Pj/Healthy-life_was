@@ -11,13 +11,8 @@ import java.util.Set;
 
 @Repository
 public interface PhysiqueTagRepository extends JpaRepository<PhysiqueTag, Long> {
-    boolean existsByPhysiqueName(String tagName);
-
-    Optional<PhysiqueTag> findByPhysiqueName(String tagName);
 
     Set<PhysiqueTag> findAllByPhysiqueName(String tag);
-
-    List<PhysiqueTag> findAllByPhysiqueTagIdIn(Set<Long> userPhysiqueIds);
 
     @Query("""
     SELECT DISTINCT pt.physiqueName
