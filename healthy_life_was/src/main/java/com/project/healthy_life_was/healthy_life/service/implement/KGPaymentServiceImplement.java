@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -29,8 +30,6 @@ public class KGPaymentServiceImplement implements KGPaymentService {
 
         String token = iamPortClient.getAccessToken().block();
         Map<String, Object> pay = iamPortClient.getPayment(token, req.getImpUid()).block();
-        Map<String, Object> easyPay = (Map<String, Object>) pay.get("easy_pay");
-        String provider = String.valueOf(easyPay.get("provider"));
 
         if (pay == null) return ApiResponseDto.fail("NO_PAYMENT");
 
@@ -45,28 +44,12 @@ public class KGPaymentServiceImplement implements KGPaymentService {
         }
 
         String payMethod = String.valueOf(pay.get("pay_method"));
-        PaymentMethod method;
+        PaymentMethod method = null;
 
         Map<String, Object> data = new HashMap<>();
 
-        switch (payMethod) {
-            case "card":
-                method = PaymentMethod.CREDIT_CARD;
-                break;
-
-            case "easy_pay":
-
-                if ("kakaopay".equals(provider)) {
-                    method = PaymentMethod.KAKAO_PAY;
-                } else if ("naverpay".equals(provider)) {
-                    method = PaymentMethod.NAVER_PAY;
-                } else {
-                    method = PaymentMethod.EASY_PAY;
-                }
-                break;
-
-            default:
-                throw new RuntimeException("Unknown pay method: " + payMethod);
+        if (Objects.equals(payMethod, "card")) {
+            method = PaymentMethod.CREDIT_CARD;
         }
 
         data.put("imp_uid", req.getImpUid());

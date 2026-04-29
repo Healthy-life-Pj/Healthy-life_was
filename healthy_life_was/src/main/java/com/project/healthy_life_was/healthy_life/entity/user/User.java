@@ -59,7 +59,7 @@ public class User {
     @Column(nullable = false)
     private MemberShip userMemberGrade = MemberShip.병아리;
 
-    @Column(nullable = false, length = 5, columnDefinition = "VARCHAR(5) COMMENT '가입 경로 (HOME, KAKAO, NAVER)'")
+    @Column(nullable = false, length = 5, columnDefinition = "VARCHAR(5) COMMENT '가입 경로 (HOME, NAVER)'")
     private String joinPath;
 
     @PrePersist
