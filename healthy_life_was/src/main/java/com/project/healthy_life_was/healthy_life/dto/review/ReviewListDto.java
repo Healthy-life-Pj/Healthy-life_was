@@ -19,10 +19,23 @@ public class ReviewListDto {
     @JsonProperty("pId")
     private Long pId;
     private String pImgUrl;
-    private String username;
+    private String userNickName;
     private Double reviewRating;
     private String reviewContent;
     private String reviewImgUrl;
     private LocalDate reviewCreatAt;
     private LocalDateTime orderDate;
+
+    public ReviewListDto(Review review) {
+        this.reviewId = review.getReviewId();
+        this.pName = review.getOrderDetail().getProduct().getPName();
+        this.pId = review.getOrderDetail().getProduct().getPId();
+        this.pImgUrl = review.getOrderDetail().getProduct().getPImgUrl();
+        this.userNickName = review.getUser().getUserNickName();
+        this.reviewRating = review.getReviewRating();
+        this.reviewContent = review.getReviewContent();
+        this.reviewImgUrl = review.getReviewImgUrl();
+        this.reviewCreatAt = review.getReviewCreatAt();
+        this.orderDate = review.getOrderDetail().getOrder().getOrderDate();
+    }
 }

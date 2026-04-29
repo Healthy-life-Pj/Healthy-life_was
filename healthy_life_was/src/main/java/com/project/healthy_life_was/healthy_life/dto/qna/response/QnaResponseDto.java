@@ -13,7 +13,7 @@ public class QnaResponseDto {
     private Long qnaId;
     @JsonProperty("pId")
     private Long pId;
-    private String username;
+    private String userNickName;
     private String qnaTitle;
     private String qnaContent;
     private String qnaAnswer;
@@ -25,7 +25,7 @@ public class QnaResponseDto {
     public QnaResponseDto(Qna qna) {
         this.qnaId = qna.getQnaId();
         this.pId = qna.getProduct().getPId();
-        this.username = qna.getUser().getUsername();
+        this.userNickName = qna.getUser().getUserNickName();
         this.qnaTitle = qna.getQnaTitle();
         this.qnaContent = qna.getQnaContent();
         this.qnaAnswer = qna.getQnaAnswer();

@@ -146,6 +146,7 @@ public class ReviewServiceImplement implements ReviewService {
 
     @Override
     public ResponseDto<ProductReviewListResponseDto> getAllReview() {
+        ProductReviewListResponseDto data = null;
         try {
             List<ReviewListDto> reviewList = reviewRepository.findAll().stream()
                     .sorted(Comparator.comparing(Review::getReviewCreatAt).reversed())
