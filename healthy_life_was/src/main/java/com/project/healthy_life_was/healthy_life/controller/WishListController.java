@@ -21,7 +21,7 @@ public class WishListController {
 
     private final String WISHLIST_PRODUCT = "/products/{pId}";
     private final String MY_WISHLIST = "/me";
-    private final String COUNT_OF_WISHlIST = "/count/products/{pId}";
+    private final String COUNT_OF_WISHLIST = "/count/products/{pId}";
 
     @PostMapping(WISHLIST_PRODUCT)
     private ResponseEntity<ResponseDto<WishlistResponseDto>> addProduct (
@@ -51,7 +51,7 @@ public class WishListController {
         return ResponseEntity.status(status).body(response);
     }
 
-    @GetMapping(COUNT_OF_WISHlIST)
+    @GetMapping(COUNT_OF_WISHLIST)
     private ResponseEntity<ResponseDto<WishlistCountResponseDto>> getWishListCount (
             @PathVariable Long pId
             ){
