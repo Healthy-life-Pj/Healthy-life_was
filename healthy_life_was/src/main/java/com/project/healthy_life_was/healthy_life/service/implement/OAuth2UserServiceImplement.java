@@ -44,7 +44,7 @@ public class OAuth2UserServiceImplement
         String birthyear = null;
         String birthday = null;
 
-       if ("naver".equals(registrationId)) {
+        if ("naver".equals(registrationId)) {
 
             Object responseObj = attributes.get("response");
             if (responseObj instanceof Map<?, ?> response) {
@@ -84,7 +84,7 @@ public class OAuth2UserServiceImplement
                     String[] parts = birthday.split("-");
                     month = parts[0];
                     day = parts[1];
-                }
+                } 
 
                 String fullDate = birthyear + "-" + month + "-" + day;
 
@@ -125,7 +125,7 @@ public class OAuth2UserServiceImplement
                     return userRepository.save(newUser);
                 });
 
-    System.out.println("NAVER RESPONSE: " + attributes);
+        System.out.println("NAVER RESPONSE: " + attributes);
         return new CustomOAuth2User(user, attributes);
     }
 }

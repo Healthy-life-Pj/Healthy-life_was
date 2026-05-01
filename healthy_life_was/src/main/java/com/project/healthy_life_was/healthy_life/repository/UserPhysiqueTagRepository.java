@@ -3,13 +3,11 @@ package com.project.healthy_life_was.healthy_life.repository;
 import com.project.healthy_life_was.healthy_life.entity.physique.TagType;
 import com.project.healthy_life_was.healthy_life.entity.physique.UserPhysiqueTag;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 @Repository
@@ -36,14 +34,6 @@ public interface UserPhysiqueTagRepository extends JpaRepository<UserPhysiqueTag
             @Param("excludeType") TagType excludeType
     );
 
-    @Modifying
-    @Query("""
-    DELETE
-    FROM UserPhysiqueTag upt
-    WHERE upt.user.userId = :userId
-""")
-    void deleteAllByUserId(@Param("userId") Long userId);
-
     void deleteByUserPhysiqueTagId(UserPhysiqueTag.UserPhysiqueTagId id);;
 
     @Query("""
@@ -59,8 +49,15 @@ public interface UserPhysiqueTagRepository extends JpaRepository<UserPhysiqueTag
     FROM UserPhysiqueTag upt
     JOIN upt.physiqueTag pt
     WHERE upt.user.userId = :userId
-""")
+    """)
     Set<String> findPhysiqueTagNameByUser_UserId(Long userId);
 
     List<UserPhysiqueTag> findAllByUser_UserId(Long userId);
+
+    @Query("""
+    SELECT upt.physiqueTag.physiqueTagId
+    FROM UserPhysiqueTag upt
+    WHERE upt.user.username = :username
+    """)
+    List<Long> findByUserName(@Param("username") String username);
 }

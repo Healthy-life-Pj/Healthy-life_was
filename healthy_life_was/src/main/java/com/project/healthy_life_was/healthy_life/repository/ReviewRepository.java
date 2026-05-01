@@ -1,13 +1,11 @@
 package com.project.healthy_life_was.healthy_life.repository;
 
-import com.project.healthy_life_was.healthy_life.entity.order.OrderStatus;
 import com.project.healthy_life_was.healthy_life.entity.review.Review;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,10 +22,17 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
         SELECT r FROM Review r
         WHERE r.user.username = :username
         AND r.reviewId = :reviewId
-""")
-    Optional<Review> findByUser_UsernameAndReviewId(String username, Long reviewId);
+    """)
+    Optional<Review> findByUser_UsernameAndReviewId(@Param("username")String username, @Param("reviewId")Long reviewId);
 
     boolean existsByUser_usernameAndOrderDetail_orderDetailId(String username, Long orderDetailId);
 
     boolean existsByOrderDetail_OrderDetailId(Long orderDetailId);
+
+    @Query("""
+    SELECT r.orderDetail.product.pId, COALESCE(AVG(r.reviewRating), 0)
+    FROM Review r
+    GROUP BY r.orderDetail.product.pId
+""")
+    List<Object[]> findAllAverageRatings();
 }

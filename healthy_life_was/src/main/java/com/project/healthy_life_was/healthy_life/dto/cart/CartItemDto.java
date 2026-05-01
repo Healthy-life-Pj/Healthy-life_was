@@ -2,8 +2,6 @@ package com.project.healthy_life_was.healthy_life.dto.cart;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.project.healthy_life_was.healthy_life.entity.cart.Cart;
-import com.project.healthy_life_was.healthy_life.entity.product.Product;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -52,7 +52,7 @@ public class SignUpRequestDto {
     private Gender userGender;
 
     @NotBlank
-    @Pattern(regexp="^(home|kakao|naver)$")
+    @Pattern(regexp="^(home|naver)$")
     private String joinPath;
     private String snsId;
 }

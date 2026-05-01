@@ -16,7 +16,6 @@ import com.project.healthy_life_was.healthy_life.entity.whishList.WishList;
 import com.project.healthy_life_was.healthy_life.provider.JwtProvider;
 import com.project.healthy_life_was.healthy_life.repository.AuthRepository;
 import com.project.healthy_life_was.healthy_life.repository.DeliverAddressRepository;
-import com.project.healthy_life_was.healthy_life.repository.UserRepository;
 import com.project.healthy_life_was.healthy_life.service.AuthService;
 import com.project.healthy_life_was.healthy_life.service.MailService;
 import jakarta.mail.MessagingException;

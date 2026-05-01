@@ -48,9 +48,20 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByUsername(@Param("username") String username);
 
     @Query("""
-    SELECT count(p)
+    SELECT DISTINCT p
     FROM Product p
-    WHERE p.pName = :pName
-    """)
-    boolean existsByPName(@Param("pName") String pName);
+    JOIN p.physiqueTags pt
+    WHERE pt.physiqueTagId IN :userPhysiqueTagIds
+    AND pt.tagType = 'INCLUDE'
+    
+    AND NOT EXISTS (
+        SELECT 1
+        FROM PhysiqueTag pt2
+        WHERE pt2.product = p
+        AND pt2.tagType = 'EXCLUDE'
+    )
+""")
+    List<Product> findProductsByTagTypes(@Param("userPhysiqueTagIds")List<Long> userPhysiqueTagIds);
+
+
 }

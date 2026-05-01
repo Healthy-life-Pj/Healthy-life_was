@@ -28,4 +28,5 @@ public class ProductCategoryDetail {
 
     @Column(name = "p_category_details_name", nullable = false)
     private String pCategoryDetailName;
+
 }

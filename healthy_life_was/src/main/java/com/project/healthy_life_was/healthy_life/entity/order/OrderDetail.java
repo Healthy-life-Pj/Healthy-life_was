@@ -5,8 +5,6 @@ import com.project.healthy_life_was.healthy_life.entity.review.Review;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.List;
-
 @Entity
 @Table(name = "order_details")
 @Setter

@@ -8,7 +8,6 @@ import com.project.healthy_life_was.healthy_life.dto.auth.response.FindInfoRespo
 import com.project.healthy_life_was.healthy_life.dto.auth.response.LoginResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.auth.response.SignUpResponseDto;
 import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 import jakarta.validation.Valid;
 
 public interface AuthService {
