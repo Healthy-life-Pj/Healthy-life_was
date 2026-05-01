@@ -39,22 +39,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (jwtProvider.isValidToken(token)) {
 
-                String username =
-                        jwtProvider.getUsernameFromJwt(token);
-                String userNickName =
-                        jwtProvider.getUserNickNameFromJwt(token);
+                String username = jwtProvider.getUsernameFromJwt(token);
 
-                setAuthenticationContext(request, username, userNickName);
+                setAuthenticationContext(request, username);
             }
         }
 
         filterChain.doFilter(request, response);
     }
 
-    private void setAuthenticationContext(HttpServletRequest request, String username, String userNickName) {
-        var optionalUser = (userNickName != null)
-                ? userRepository.findByUsernameAndUserNickName(username, userNickName)
-                : userRepository.findByUsername(username);
+    private void setAuthenticationContext(HttpServletRequest request, String username) {
+        var optionalUser = userRepository.findByUsername(username);
 
         optionalUser.ifPresent(user -> {
             PrincipalUser principalUser = new PrincipalUser(user);
