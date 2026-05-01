@@ -33,10 +33,8 @@ public class UserUpdateRequestDto {
     )
     private String userEmail;
 
-    // 대시 있는 형식(010-1234-5678)과 없는 형식(01012345678) 모두 허용
-    // null은 "변경 없음"으로 처리하므로 허용, 빈 문자열은 프론트에서 null로 보내야 함
     @Pattern(
-            regexp = "^01[016789]-?\\d{3,4}-?\\d{4}$",
+            regexp="^01[016789]-?\\d{3,4}-?\\d{4}$",
             message = ResponseMessage.VALIDATION_FAIL + "userPhone"
     )
     private String userPhone;
