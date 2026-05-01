@@ -2,7 +2,6 @@ package com.project.healthy_life_was.healthy_life.controller;
 
 import com.project.healthy_life_was.healthy_life.common.constant.ApiMappingPattern;
 import com.project.healthy_life_was.healthy_life.dto.ResponseDto;
-import com.project.healthy_life_was.healthy_life.dto.product.request.CrawlRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.product.response.ProductDetailResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.product.response.ProductListResponseDto;
 import com.project.healthy_life_was.healthy_life.service.ProductService;

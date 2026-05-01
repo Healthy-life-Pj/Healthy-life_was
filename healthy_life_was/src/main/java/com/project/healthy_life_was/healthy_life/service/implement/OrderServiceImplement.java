@@ -11,7 +11,6 @@ import com.project.healthy_life_was.healthy_life.dto.payment.ApiResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.payment.CancelRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.payment.KGPaymentDto;
 import com.project.healthy_life_was.healthy_life.dto.payment.VerifyRequestDto;
-import com.project.healthy_life_was.healthy_life.entity.cart.Cart;
 import com.project.healthy_life_was.healthy_life.entity.cart.CartItem;
 import com.project.healthy_life_was.healthy_life.entity.deliverAddress.DeliverAddress;
 import com.project.healthy_life_was.healthy_life.entity.order.Order;
@@ -31,11 +30,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service

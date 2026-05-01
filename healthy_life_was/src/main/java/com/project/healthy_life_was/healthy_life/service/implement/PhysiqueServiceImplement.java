@@ -3,12 +3,10 @@ package com.project.healthy_life_was.healthy_life.service.implement;
 import com.project.healthy_life_was.healthy_life.common.constant.ResponseMessage;
 import com.project.healthy_life_was.healthy_life.dto.ResponseDto;
 import com.project.healthy_life_was.healthy_life.convertor.PhysiqueConvertor;
-import com.project.healthy_life_was.healthy_life.dto.physique.request.PhysiqueTagAddRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.physique.request.SetPhysiqueRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.physique.response.PhysiqueNameResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.physique.response.PhysiqueTagResponseDto;
 import com.project.healthy_life_was.healthy_life.entity.physique.PhysiqueTag;
-import com.project.healthy_life_was.healthy_life.entity.physique.TagType;
 import com.project.healthy_life_was.healthy_life.entity.physique.UserPhysiqueTag;
 import com.project.healthy_life_was.healthy_life.entity.user.User;
 import com.project.healthy_life_was.healthy_life.repository.PhysiqueTagRepository;
@@ -18,12 +16,10 @@ import com.project.healthy_life_was.healthy_life.service.PhysiqueService;
 import com.sun.jdi.InternalException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor

@@ -8,8 +8,6 @@ import com.project.healthy_life_was.healthy_life.dto.review.response.ReviewCreat
 import com.project.healthy_life_was.healthy_life.dto.review.response.ReviewResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.review.response.ReviewUpdateResponseDto;
 
-import java.util.List;
-
 public interface ReviewService {
     ResponseDto<ReviewCreateResponseDto> createReview(String username, Long orderDetailId, ReviewCreateRequestDto dto);
     ResponseDto<ProductReviewListResponseDto> getMyReview(String username);

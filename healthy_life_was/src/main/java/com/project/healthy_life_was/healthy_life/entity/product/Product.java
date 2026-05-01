@@ -1,6 +1,8 @@
 package com.project.healthy_life_was.healthy_life.entity.product;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.project.healthy_life_was.healthy_life.entity.cart.CartItem;
+import com.project.healthy_life_was.healthy_life.entity.order.OrderDetail;
 import com.project.healthy_life_was.healthy_life.entity.physique.PhysiqueTag;
 import jakarta.persistence.*;
 import lombok.*;
@@ -55,6 +57,10 @@ public class Product {
     @Column(name = "p_stock_status", nullable = false)
     private int pStockStatus;
 
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<OrderDetail> orderDetails  = new ArrayList<>();
+
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "p_category_details_id", nullable = false)
     private ProductCategoryDetail productCategoryDetail;
@@ -62,4 +68,8 @@ public class Product {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<PhysiqueTag> physiqueTags = new ArrayList<>();
+    
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<CartItem> cartItem = new ArrayList<>();
 }
