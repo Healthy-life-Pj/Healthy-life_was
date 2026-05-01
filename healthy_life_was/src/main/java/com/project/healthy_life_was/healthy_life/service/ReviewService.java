@@ -12,18 +12,11 @@ import java.util.List;
 
 public interface ReviewService {
     ResponseDto<ReviewCreateResponseDto> createReview(String username, Long orderDetailId, ReviewCreateRequestDto dto);
-
     ResponseDto<ProductReviewListResponseDto> getMyReview(String username);
-
     ResponseDto<ReviewUpdateResponseDto> updateReview(String username, Long reviewId, ReviewUpdateRequestDto dto);
-
     ResponseDto<Void> deleteReview(String username, Long reviewId);
-
     ResponseDto<Boolean> duplicateReview(String username, Long orderDetailId);
-
     ResponseDto<ProductReviewListResponseDto> getAllReview();
-
     ResponseDto<ProductReviewListResponseDto> getAllReviewProduct(Long pId);
-
     ResponseDto<ReviewResponseDto> getOneReview(String username, Long reviewId);
 }

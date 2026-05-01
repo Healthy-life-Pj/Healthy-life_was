@@ -6,7 +6,6 @@ import com.project.healthy_life_was.healthy_life.dto.qna.request.QnaRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.qna.response.QnaResponseDto;
 import com.project.healthy_life_was.healthy_life.entity.product.Product;
 import com.project.healthy_life_was.healthy_life.entity.qna.Qna;
-import com.project.healthy_life_was.healthy_life.entity.review.Review;
 import com.project.healthy_life_was.healthy_life.entity.user.User;
 import com.project.healthy_life_was.healthy_life.repository.ProductRepository;
 import com.project.healthy_life_was.healthy_life.repository.QnaRepository;
@@ -22,7 +21,6 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class QnaServiceImplement implements QnaService {
-
     private final QnaRepository qnaRepository;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;

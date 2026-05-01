@@ -12,24 +12,15 @@ import java.util.stream.Collectors;
 
 @Data
 public class UserInfoResponseDto {
-
     private Long userId;
     private String username;
-
     private String  name;
-
     private String userNickName;
-
     private String userEmail;
-
     private String userPhone;
-
     private Date userBirth;
-
     private Gender userGender;
-
     private MemberShip userMemberGrade;
-
     private List<DeliverAddressDto> deliverAddressInfo;
 
     public UserInfoResponseDto(User user) {

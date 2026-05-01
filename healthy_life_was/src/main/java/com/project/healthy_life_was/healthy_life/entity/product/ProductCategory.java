@@ -13,7 +13,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class ProductCategory {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "p_category_id")

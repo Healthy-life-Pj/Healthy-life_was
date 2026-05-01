@@ -15,7 +15,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class OrderDetail {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "order_detail_id", nullable = false, updatable = false)
@@ -47,6 +46,4 @@ public class OrderDetail {
 
     @OneToOne(mappedBy = "orderDetail", orphanRemoval = true)
     private Review review;
-
-
 }

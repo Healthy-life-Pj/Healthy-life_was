@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class QnaRequestDto {
-
     private String qnaTitle;
     private String qnaContent;
 

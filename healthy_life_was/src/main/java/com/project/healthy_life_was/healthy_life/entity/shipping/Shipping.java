@@ -42,6 +42,7 @@ public class Shipping {
     @Column(name = "shipping_delivered_at")
     private LocalDateTime shippingDeliveredAt;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "shipping_status")
     private ShippingStatus shippingStatus;
 }

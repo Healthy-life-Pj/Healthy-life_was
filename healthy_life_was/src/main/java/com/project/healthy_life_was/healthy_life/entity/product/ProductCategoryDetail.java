@@ -14,7 +14,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class ProductCategoryDetail {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "p_category_details_id")
@@ -29,5 +28,4 @@ public class ProductCategoryDetail {
 
     @Column(name = "p_category_details_name", nullable = false)
     private String pCategoryDetailName;
-
 }

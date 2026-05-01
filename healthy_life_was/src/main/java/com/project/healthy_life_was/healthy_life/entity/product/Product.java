@@ -17,7 +17,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class Product {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "p_id", nullable = false, updatable = false)
@@ -63,5 +62,4 @@ public class Product {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<PhysiqueTag> physiqueTags = new ArrayList<>();
-
 }

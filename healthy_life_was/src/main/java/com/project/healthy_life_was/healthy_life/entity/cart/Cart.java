@@ -15,7 +15,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class Cart {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "cart_id", nullable = false, updatable = false)
