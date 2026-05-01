@@ -12,26 +12,19 @@ import java.util.stream.Collectors;
 
 @Data
 public class UserInfoResponseDto {
-
+    private Long userId;
     private String username;
-
     private String  name;
-
     private String userNickName;
-
     private String userEmail;
-
     private String userPhone;
-
     private Date userBirth;
-
     private Gender userGender;
-
     private MemberShip userMemberGrade;
-
     private List<DeliverAddressDto> deliverAddressInfo;
 
     public UserInfoResponseDto(User user) {
+        this.userId = user.getUserId();
         this.username = user.getUsername();
         this.name = user.getName();
         this.userNickName = user.getUserNickName();
@@ -43,7 +36,7 @@ public class UserInfoResponseDto {
         this.deliverAddressInfo = user.getDeliverAddress()
                 .stream()
                 .map((address) -> {
-                    return new DeliverAddressDto(address.getAddress(), address.getAddressDetail(), address.getPostNum());
+                    return new DeliverAddressDto(address.getDeliverAddressId(), address.getAddress(), address.getAddressDetail(), address.getPostNum(), address.isDefault());
                 }).collect(Collectors.toList());
     }
 }

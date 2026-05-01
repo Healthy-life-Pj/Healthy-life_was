@@ -16,7 +16,6 @@ import com.project.healthy_life_was.healthy_life.entity.whishList.WishList;
 import com.project.healthy_life_was.healthy_life.provider.JwtProvider;
 import com.project.healthy_life_was.healthy_life.repository.AuthRepository;
 import com.project.healthy_life_was.healthy_life.repository.DeliverAddressRepository;
-import com.project.healthy_life_was.healthy_life.repository.UserRepository;
 import com.project.healthy_life_was.healthy_life.service.AuthService;
 import com.project.healthy_life_was.healthy_life.service.MailService;
 import jakarta.mail.MessagingException;
@@ -106,10 +105,6 @@ public class AuthServiceImplement implements AuthService {
            return ResponseDto.setFailed(ResponseMessage.EXIST_USER_NAME);
        }
 
-//       if (authRespository.existsByUserEmail(userEmail)) {
-//           return ResponseDto.setFailed(ResponseMessage.EXIST_USER_EMAIL);
-//       }
-
        if (authRepository.existsByUserNickName(userNickName)) {
            return ResponseDto.setFailed(ResponseMessage.EXIST_USER_NICK_NAME);
        }
@@ -175,11 +170,11 @@ public class AuthServiceImplement implements AuthService {
                 return ResponseDto.setFailed(ResponseMessage.NOT_MATCH_PASSWORD);
             }
 
-            String token = jwtProvider.generateJwtToken(username);
+            String token = jwtProvider.generateJwtToken(username, user.getUserNickName());
             int exprTime = jwtProvider.getExpiration();
 
             List<DeliverAddressDto> deliverAddressDtoList = deliverAddressList.stream()
-                    .map(address -> new DeliverAddressDto(address.getAddress(), address.getAddressDetail(), address.getPostNum()))
+                    .map(address -> new DeliverAddressDto(address.getDeliverAddressId(), address.getAddress(), address.getAddressDetail(), address.getPostNum(), address.isDefault()))
                     .collect(Collectors.toList());
 
             data = new LoginResponseDto(user, deliverAddressDtoList, token, exprTime);
@@ -241,7 +236,8 @@ public class AuthServiceImplement implements AuthService {
                 javaMailSender.send(message);
                 return ResponseDto.setSuccess(ResponseMessage.SUCCESS, new FindInfoResponseDto(message, user.get().getUsername(), null));
             } else {
-                String token = jwtProvider.generateJwtToken(username);
+                User user = authRepository.findByUsername(username);
+                String token = jwtProvider.generateJwtToken(username, user.getUserNickName());
                 MimeMessage message = mailService.createMailForPw(email, username, token);
                 javaMailSender.send(message);
                 return ResponseDto.setSuccess(ResponseMessage.SUCCESS, new FindInfoResponseDto(message, null, token));

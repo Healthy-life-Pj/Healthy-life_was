@@ -52,9 +52,11 @@ public class ShippingServiceImplement implements ShippingService {
 
         Shipping shipping = Shipping.builder()
                 .order(order)
+                .shippingTrackingNum(trackingNum)
+                .shippingCarrierCode("HL")
+                .shippingCarrierName("HL택배")
                 .shippingShippedAt(LocalDateTime.now())
                 .shippingStatus(ShippingStatus.PENDING)
-                .shippingTrackingNum(trackingNum)
                 .build();
 
         shipping = shippingRepository.save(shipping);

@@ -7,7 +7,6 @@ import lombok.Getter;
 
 @Getter
 public class UserDeleteRequestDto {
-
     @NotBlank(message = "비밀번호를 입력해주세요")
     @Pattern(
             regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,20}$",

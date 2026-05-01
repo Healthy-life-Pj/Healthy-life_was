@@ -12,6 +12,8 @@ import lombok.NoArgsConstructor;
 public class CartAddResponseDto {
     private Long cartId;
 
+    private Long cartItemId;
+
     private Long pId;
 
     private String pName;
@@ -25,6 +27,7 @@ public class CartAddResponseDto {
 
     public CartAddResponseDto(CartItem cartItem) {
         this.cartId = cartItem.getCart().getCartId();
+        this.cartItemId = cartItem.getCartItemId();
         this.pId = cartItem.getProduct().getPId();
         this.pName = cartItem.getProduct().getPName();
         this.productQuantity = cartItem.getProductQuantity();

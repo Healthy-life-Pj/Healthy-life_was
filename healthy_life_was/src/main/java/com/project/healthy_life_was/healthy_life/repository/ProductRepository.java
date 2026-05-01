@@ -7,29 +7,28 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
-
     List<Product> findAll();
 
     @Query(value = """
-    SELECT p.*
-    FROM products p 
-    JOIN product_category_details pcd ON pcd.p_id = p.p_id
-    JOIN product_category pc ON pcd.p_category_id = pc.p_category_id
-    WHERE pc.p_category_name = :pCategoryName
-""", nativeQuery = true)
+    SELECT p
+    FROM Product p
+    JOIN p.productCategoryDetail.productCategory pc
+    WHERE pc.pCategoryName = :pCategoryName
+""")
     List<Product> findByPCategoryName(@Param("pCategoryName") String pCategoryName);
 
-    @Query(value = """
-        SELECT p.*
-        FROM products p
-        JOIN product_category_details pcd ON p.p_id = pcd.p_id
-        WHERE pcd.p_category_details_name = :pCategoryDetailName
-    """, nativeQuery = true)
-    List<Product> findByPCategoryDetailsName(@Param("pCategoryDetailName")String pCategoryDetailName);
+    @Query("""
+        SELECT p
+        FROM Product p
+        JOIN p.productCategoryDetail pcd
+        JOIN pcd.productCategory pc
+        WHERE pcd.pCategoryDetailName = :pCategoryDetailName
+        AND pc.pCategoryName = :pCategoryName
+    """)
+    List<Product> findByPCategoryNameAndPCategoryDetailsName(@Param("pCategoryName") String pCategoryName, @Param("pCategoryDetailName")String pCategoryDetailName);
 
     @Query("""
     SELECT p
@@ -39,12 +38,30 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByPName(@Param("pName") String pName);
 
     @Query(value = """
-    SELECT DISTINCT p.* 
+    SELECT DISTINCT p.*
     FROM products p
-    JOIN physique_tag pt ON p.p_id = pt.p_id
-    JOIN user_physique_tag upt ON pt.physique_tag_id = upt.physique_tag_id
+    JOIN physique_tags pt ON p.p_id = pt.p_id
+    JOIN user_physique_tags upt ON pt.physique_tag_id = upt.physique_tag_id
     JOIN users u ON upt.user_id = u.user_id
     WHERE u.user_name = :username
 """, nativeQuery = true)
     List<Product> findByUsername(@Param("username") String username);
+
+    @Query("""
+    SELECT DISTINCT p
+    FROM Product p
+    JOIN p.physiqueTags pt
+    WHERE pt.physiqueTagId IN :userPhysiqueTagIds
+    AND pt.tagType = 'INCLUDE'
+    
+    AND NOT EXISTS (
+        SELECT 1
+        FROM PhysiqueTag pt2
+        WHERE pt2.product = p
+        AND pt2.tagType = 'EXCLUDE'
+    )
+""")
+    List<Product> findProductsByTagTypes(@Param("userPhysiqueTagIds")List<Long> userPhysiqueTagIds);
+
+
 }

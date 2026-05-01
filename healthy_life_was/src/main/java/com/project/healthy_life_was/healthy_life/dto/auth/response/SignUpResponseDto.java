@@ -22,23 +22,14 @@ import java.util.stream.Collectors;
 public class SignUpResponseDto {
 
     private Long userId;
-
     private String username;
-
     private String password;
-
     private String userNickName;
-
     private Date userBirth;
-
     private Gender userGender;
-
     private String userEmail;
-
     private String userPhone;
-
     private String joinPath;
-
     private String snsId;
 
     private List<DeliverAddressDto> deliverAddress = new ArrayList<>();
@@ -59,7 +50,7 @@ public class SignUpResponseDto {
         this.snsId = user.getSnsId();
 
         this.deliverAddress = deliverAddressList.stream()
-                .map(address -> new DeliverAddressDto(address.getAddress(), address.getAddressDetail(), address.getPostNum()))
+                .map(address -> new DeliverAddressDto(address.getDeliverAddressId(), address.getAddress(), address.getAddressDetail(), address.getPostNum(), address.isDefault()))
                 .collect(Collectors.toList());
     }
 

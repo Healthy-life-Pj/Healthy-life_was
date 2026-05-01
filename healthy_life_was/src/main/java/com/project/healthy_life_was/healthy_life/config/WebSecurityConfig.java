@@ -2,6 +2,8 @@ package com.project.healthy_life_was.healthy_life.config;
 
 import com.project.healthy_life_was.healthy_life.filter.JwtAuthenticationFilter;
 
+import com.project.healthy_life_was.healthy_life.handler.OAuth2SuccessHandler;
+import com.project.healthy_life_was.healthy_life.service.implement.OAuth2UserServiceImplement;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -34,6 +37,9 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class WebSecurityConfig {
+
+    private final OAuth2UserServiceImplement oAuth2UserServiceImplement;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
     @Lazy
     @Autowired
@@ -63,6 +69,7 @@ public class WebSecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(withDefaults())
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(
                                 new AntPathRequestMatcher("/api/v1/auth/**"),
                                 new AntPathRequestMatcher("/api/v1/mail/**"),
@@ -70,10 +77,21 @@ public class WebSecurityConfig {
                                 new AntPathRequestMatcher("/upload/**"),
                                 new AntPathRequestMatcher("/file/**"),
                                 new AntPathRequestMatcher("/oauth2/callback/**"),
-                                new AntPathRequestMatcher("/api/v1/mail/**")
+                                new AntPathRequestMatcher("/imgs/**")
                         )
                         .permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/users/me/password/email").permitAll()
                         .anyRequest().authenticated())
+                .oauth2Login(oauth2 -> oauth2
+                        .redirectionEndpoint(endpoint ->
+                                endpoint.baseUri("/oauth2/callback/*"))
+                        .authorizationEndpoint(endpoint ->
+                                endpoint.baseUri("/oauth2/authorization"))
+                        .userInfoEndpoint(endpoint ->
+                                endpoint.userService(oAuth2UserServiceImplement))
+                        .successHandler(oAuth2SuccessHandler)
+                )
+
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

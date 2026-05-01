@@ -4,17 +4,17 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReviewUpdateRequestDto {
-
     @NotNull
     private Double reviewRating;
     @NotNull
     private String reviewContent;
 
-    private String reviewImgUrl;
+    private MultipartFile reviewImgUrl;
 
 }

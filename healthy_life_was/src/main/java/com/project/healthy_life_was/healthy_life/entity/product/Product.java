@@ -1,6 +1,8 @@
 package com.project.healthy_life_was.healthy_life.entity.product;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.project.healthy_life_was.healthy_life.entity.cart.CartItem;
+import com.project.healthy_life_was.healthy_life.entity.order.OrderDetail;
 import com.project.healthy_life_was.healthy_life.entity.physique.PhysiqueTag;
 import jakarta.persistence.*;
 import lombok.*;
@@ -17,7 +19,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class Product {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "p_id", nullable = false, updatable = false)
@@ -58,6 +59,17 @@ public class Product {
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
-    private List<PhysiqueTag> physiqueTags = new ArrayList<>();
+    private List<OrderDetail> orderDetails  = new ArrayList<>();
 
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "p_category_details_id", nullable = false)
+    private ProductCategoryDetail productCategoryDetail;
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<PhysiqueTag> physiqueTags = new ArrayList<>();
+    
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<CartItem> cartItem = new ArrayList<>();
 }

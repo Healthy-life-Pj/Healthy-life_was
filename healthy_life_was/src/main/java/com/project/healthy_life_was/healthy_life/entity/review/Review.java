@@ -15,13 +15,12 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Builder
 public class Review {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "review_id")
     private Long reviewId;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "order_detail_id", nullable = false)
     private OrderDetail orderDetail;
 

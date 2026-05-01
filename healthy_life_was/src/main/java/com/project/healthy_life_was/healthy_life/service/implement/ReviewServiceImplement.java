@@ -7,6 +7,7 @@ import com.project.healthy_life_was.healthy_life.dto.review.request.ReviewCreate
 import com.project.healthy_life_was.healthy_life.dto.review.request.ReviewUpdateRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.review.response.ProductReviewListResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.review.response.ReviewCreateResponseDto;
+import com.project.healthy_life_was.healthy_life.dto.review.response.ReviewResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.review.response.ReviewUpdateResponseDto;
 import com.project.healthy_life_was.healthy_life.entity.order.OrderDetail;
 import com.project.healthy_life_was.healthy_life.entity.order.OrderStatus;
@@ -15,73 +16,73 @@ import com.project.healthy_life_was.healthy_life.entity.user.User;
 import com.project.healthy_life_was.healthy_life.repository.OrderDetailRepository;
 import com.project.healthy_life_was.healthy_life.repository.ReviewRepository;
 import com.project.healthy_life_was.healthy_life.repository.UserRepository;
+import com.project.healthy_life_was.healthy_life.service.ImgService;
 import com.project.healthy_life_was.healthy_life.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class ReviewServiceImplement implements ReviewService {
-
     private final ReviewRepository reviewRepository;
+    private final ImgService imgService;
     private final OrderDetailRepository orderDetailRepository;
     private final UserRepository userRepository;
 
     @Override
+    @Transactional
     public ResponseDto<ReviewCreateResponseDto> createReview(String username, Long orderDetailId, ReviewCreateRequestDto dto) {
-        ReviewCreateResponseDto data = null;
         try {
             User user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "user"));
             OrderDetail orderDetail = orderDetailRepository.findById(orderDetailId)
                     .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "orderDetail"));
-            boolean result = reviewRepository.existsByUser_usernameAndOrderDetail_orderDetailId(username, orderDetail.getOrderDetailId());
-            if(result){
-                return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_DATA + "review");
+
+            if (orderDetail.getOrderStatus() != OrderStatus.DELIVERED) {
+                return ResponseDto.setFailed("배송 완료 후 리뷰 작성 가능");
             }
+
+            if (reviewRepository.existsByOrderDetail_OrderDetailId(orderDetailId)) {
+                return ResponseDto.setFailed("이미 리뷰가 존재합니다");
+            }
+
+            String reviewImgPath = null;
+            if (dto.getReviewImgUrl() != null && !dto.getReviewImgUrl().isEmpty()) {
+                reviewImgPath = imgService.convertImgFile(dto.getReviewImgUrl(), "reviewImg");
+            }
+
             Review review = Review.builder()
                     .user(user)
                     .orderDetail(orderDetail)
                     .reviewRating(dto.getReviewRating())
                     .reviewContent(dto.getReviewContent())
-                    .reviewImgUrl(dto.getReviewImgUrl())
+                    .reviewImgUrl(reviewImgPath)
                     .reviewCreatAt(LocalDate.now())
                     .build();
-            if (!orderDetail.getOrder().getOrderStatus().equals(OrderStatus.DELIVERED)) {
-                return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_DATA);
-            }
             reviewRepository.save(review);
 
-            data = new ReviewCreateResponseDto(review);
+            return ResponseDto.setSuccess(ResponseMessage.SUCCESS, new ReviewCreateResponseDto(review));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
         }
-        return ResponseDto.setSuccess(ResponseMessage.SUCCESS, data);
     }
 
     @Override
     public ResponseDto<ProductReviewListResponseDto> getMyReview(String username) {
-        ProductReviewListResponseDto data = null;
         try {
             List<Review> reviews = reviewRepository.findByUser_Username(username);
             List<ReviewListDto> reviewList = reviews.stream()
-                    .map(review -> new ReviewListDto(
-                            review.getReviewId(),
-                            review.getOrderDetail().getProduct().getPName(),
-                            review.getUser().getUsername(),
-                            review.getReviewRating(),
-                            review.getReviewContent(),
-                            review.getReviewImgUrl(),
-                            review.getReviewCreatAt()
-                    ))
+                    .sorted(Comparator.comparing(Review::getReviewCreatAt).reversed())
+                    .map(this::toReviewListDto)
                     .toList();
-            data = new ProductReviewListResponseDto(reviewList);
-            return ResponseDto.setSuccess(ResponseMessage.SUCCESS, data);
+            return ResponseDto.setSuccess(ResponseMessage.SUCCESS, new ProductReviewListResponseDto(reviewList));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
@@ -94,10 +95,15 @@ public class ReviewServiceImplement implements ReviewService {
         try {
             Review review = reviewRepository.findById(reviewId)
                     .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "review"));
-
-            review.setReviewRating(dto.getReviewRating());
-            review.setReviewContent(dto.getReviewContent());
-            review.setReviewImgUrl(dto.getReviewImgUrl());
+            if (dto.getReviewImgUrl() != null) {
+                String reviewImgPath = imgService.convertImgFile(dto.getReviewImgUrl(), "reviewImg");
+                review.setReviewImgUrl(reviewImgPath);
+            }
+            if (ChronoUnit.DAYS.between(review.getReviewCreatAt(), LocalDate.now()) <= 30) {
+                review.setReviewRating(dto.getReviewRating());
+                review.setReviewContent(dto.getReviewContent());
+            }
+            
             reviewRepository.save(review);
             data = new ReviewUpdateResponseDto(review);
         } catch (Exception e) {
@@ -110,11 +116,10 @@ public class ReviewServiceImplement implements ReviewService {
     @Override
     @Transactional
     public ResponseDto<Void> deleteReview(String username, Long reviewId) {
-        try{
-            Review review = reviewRepository.findByUser_UsernameAndReviewId(username, reviewId);
-            if (review == null) {
-                return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_DATA);
-            }
+        try {
+            Review review = reviewRepository.findByUser_UsernameAndReviewId(username, reviewId)
+                    .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA));
+            review.getOrderDetail().setReview(null);
             reviewRepository.delete(review);
         } catch (Exception e) {
             e.printStackTrace();
@@ -125,7 +130,7 @@ public class ReviewServiceImplement implements ReviewService {
 
     @Override
     public ResponseDto<Boolean> duplicateReview(String username, Long orderDetailId) {
-       try {
+        try {
             boolean result = reviewRepository.existsByUser_usernameAndOrderDetail_orderDetailId(username, orderDetailId);
 
             if (result) {
@@ -133,30 +138,21 @@ public class ReviewServiceImplement implements ReviewService {
             } else {
                 return ResponseDto.setSuccess(ResponseMessage.DUPLICATED_REVIEW, false);
             }
-       } catch (Exception e) {
-           e.printStackTrace();
-           return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
-       }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
+        }
     }
 
     @Override
     public ResponseDto<ProductReviewListResponseDto> getAllReview() {
         ProductReviewListResponseDto data = null;
         try {
-            List<Review> reviews = reviewRepository.findAll();
-            List<ReviewListDto> reviewList = reviews.stream()
-                    .map(review -> new ReviewListDto(
-                            review.getReviewId(),
-                            review.getOrderDetail().getProduct().getPName(),
-                            review.getUser().getUsername(),
-                            review.getReviewRating(),
-                            review.getReviewContent(),
-                            review.getReviewImgUrl(),
-                            review.getReviewCreatAt()
-                    ))
+            List<ReviewListDto> reviewList = reviewRepository.findAll().stream()
+                    .sorted(Comparator.comparing(Review::getReviewCreatAt).reversed())
+                    .map(this::toReviewListDto)
                     .toList();
-            data = new ProductReviewListResponseDto(reviewList);
-            return ResponseDto.setSuccess(ResponseMessage.SUCCESS, data);
+            return ResponseDto.setSuccess(ResponseMessage.SUCCESS, new ProductReviewListResponseDto(reviewList));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
@@ -165,25 +161,42 @@ public class ReviewServiceImplement implements ReviewService {
 
     @Override
     public ResponseDto<ProductReviewListResponseDto> getAllReviewProduct(Long pId) {
-        ProductReviewListResponseDto data = null;
         try {
-            List<Review> reviews = reviewRepository.findByOrderDetail_Product_pId(pId);
-            List<ReviewListDto> reviewList = reviews.stream()
-                    .map(review -> new ReviewListDto(
-                            review.getReviewId(),
-                            review.getOrderDetail().getProduct().getPName(),
-                            review.getUser().getUsername(),
-                            review.getReviewRating(),
-                            review.getReviewContent(),
-                            review.getReviewImgUrl(),
-                            review.getReviewCreatAt()
-                    ))
+            List<ReviewListDto> reviewList = reviewRepository.findByOrderDetail_Product_pId(pId).stream()
+                    .sorted(Comparator.comparing(Review::getReviewCreatAt).reversed())
+                    .map(this::toReviewListDto)
                     .toList();
-            data = new ProductReviewListResponseDto(reviewList);
-            return ResponseDto.setSuccess(ResponseMessage.SUCCESS, data);
+            return ResponseDto.setSuccess(ResponseMessage.SUCCESS, new ProductReviewListResponseDto(reviewList));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
         }
+    }
+
+    @Override
+    public ResponseDto<ReviewResponseDto> getOneReview(String username, Long reviewId) {
+        try {
+            Review review = reviewRepository.findByUser_UsernameAndReviewId(username, reviewId)
+                    .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA));
+            return ResponseDto.setSuccess(ResponseMessage.SUCCESS, new ReviewResponseDto(review));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
+        }
+    }
+
+    private ReviewListDto toReviewListDto(Review review) {
+        return new ReviewListDto(
+                review.getReviewId(),
+                review.getOrderDetail().getProduct().getPName(),
+                review.getOrderDetail().getProduct().getPId(),
+                review.getOrderDetail().getProduct().getPImgUrl(),
+                review.getUser().getUsername(),
+                review.getReviewRating(),
+                review.getReviewContent(),
+                review.getReviewImgUrl(),
+                review.getReviewCreatAt(),
+                review.getOrderDetail().getOrder().getOrderDate()
+        );
     }
 }

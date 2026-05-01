@@ -3,6 +3,7 @@ package com.project.healthy_life_was.healthy_life.controller;
 import com.project.healthy_life_was.healthy_life.common.constant.ApiMappingPattern;
 import com.project.healthy_life_was.healthy_life.dto.ResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.auth.request.FindIdRequestDto;
+import com.project.healthy_life_was.healthy_life.dto.auth.request.FindInfoRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.auth.response.FindIdResponseDto;
 import com.project.healthy_life_was.healthy_life.service.MailService;
 import jakarta.mail.MessagingException;
@@ -19,7 +20,8 @@ public class MailController {
     private final MailService MailService;
 
     private final String FIND_ID_SEND_MAIL = "/find-id";
-    private final String FIND_ID_BY_TOKEN = "/find-id";
+    private final String FIND_ID_BY_TOKEN = "/find-id/verify-find-username";
+    private final String RECOVERY_PASSWORD_SEND_MAIL = "/recovery-email";
 
     @PostMapping(FIND_ID_SEND_MAIL)
     public ResponseEntity<ResponseDto<String>> sendEmail(@RequestBody FindIdRequestDto dto) throws MessagingException {
@@ -31,6 +33,13 @@ public class MailController {
     @GetMapping(FIND_ID_BY_TOKEN)
     public ResponseEntity<ResponseDto<FindIdResponseDto>> findLoginId(@RequestParam String token) {
         ResponseDto<FindIdResponseDto> response = MailService.verifyEmailId(token);
+        HttpStatus status = response.isResult() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
+        return ResponseEntity.status(status).body(response);
+    }
+
+    @PostMapping(RECOVERY_PASSWORD_SEND_MAIL)
+    public ResponseEntity<ResponseDto<String>> sendPasswordEmail(@RequestBody FindInfoRequestDto dto) throws MessagingException {
+        ResponseDto<String> response = MailService.sendMessagePw(dto);
         HttpStatus status = response.isResult() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
         return ResponseEntity.status(status).body(response);
     }

@@ -3,6 +3,8 @@ package com.project.healthy_life_was.healthy_life.entity.product;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "product_category")
 @Setter
@@ -11,7 +13,6 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class ProductCategory {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "p_category_id")
@@ -20,4 +21,6 @@ public class ProductCategory {
     @Column(name = "p_category_name")
     private String pCategoryName;
 
+    @OneToMany(mappedBy = "productCategory", cascade = CascadeType.ALL)
+    private List<ProductCategoryDetail> productCategoryDetails;
 }

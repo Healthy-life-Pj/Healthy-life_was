@@ -35,12 +35,12 @@ public class UserUpdateRequestDto {
     private String userEmail;
 
     @Pattern(
-            regexp = "^01[016789]\\d{7,8}$",
+            regexp="^01[016789]-?\\d{3,4}-?\\d{4}$",
             message = ResponseMessage.VALIDATION_FAIL + "userPhone"
     )
     private String userPhone;
 
-    private Date userBirth;
+    private Date userBirth;pu
 
     private Gender userGender;
 }

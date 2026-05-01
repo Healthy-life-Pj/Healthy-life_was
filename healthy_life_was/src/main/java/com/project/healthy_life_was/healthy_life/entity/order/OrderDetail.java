@@ -1,6 +1,7 @@
 package com.project.healthy_life_was.healthy_life.entity.order;
 
 import com.project.healthy_life_was.healthy_life.entity.product.Product;
+import com.project.healthy_life_was.healthy_life.entity.review.Review;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,7 +13,6 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class OrderDetail {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "order_detail_id", nullable = false, updatable = false)
@@ -22,7 +22,7 @@ public class OrderDetail {
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "p_id", nullable = false)
     private Product product;
 
@@ -35,4 +35,13 @@ public class OrderDetail {
     @Column(name ="total_price", nullable = false)
     private int totalPrice;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "order_status", nullable = false)
+    private OrderStatus orderStatus;
+
+    @Column(name = "pre_delivery_status")
+    private String preDeliveryStatus;
+
+    @OneToOne(mappedBy = "orderDetail", orphanRemoval = true)
+    private Review review;
 }

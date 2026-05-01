@@ -6,11 +6,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
+@Setter
 @Table(name = "Shipping")
 @Builder
 @AllArgsConstructor
@@ -28,12 +30,19 @@ public class Shipping {
     @Column(name = "shipping_tracking_num")
     private int shippingTrackingNum;
 
+    @Column(name = "shipping_carrier_code")
+    private String shippingCarrierCode;
+
+    @Column(name = "shipping_carrier_name")
+    private String shippingCarrierName;
+
     @Column(name = "shipping_shipped_at")
     private LocalDateTime shippingShippedAt;
 
     @Column(name = "shipping_delivered_at")
     private LocalDateTime shippingDeliveredAt;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "shipping_status")
     private ShippingStatus shippingStatus;
 }

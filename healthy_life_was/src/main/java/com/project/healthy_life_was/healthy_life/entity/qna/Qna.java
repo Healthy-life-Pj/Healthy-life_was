@@ -13,7 +13,6 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class Qna {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "qna_id", nullable = false, updatable = false)

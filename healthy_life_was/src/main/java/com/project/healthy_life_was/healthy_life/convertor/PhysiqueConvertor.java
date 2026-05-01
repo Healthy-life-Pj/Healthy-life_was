@@ -1,8 +1,10 @@
 package com.project.healthy_life_was.healthy_life.convertor;
 
 import com.project.healthy_life_was.healthy_life.common.constant.ResponseMessage;
+import com.project.healthy_life_was.healthy_life.dto.physique.response.PhysiqueNameResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.physique.response.PhysiqueResponseDto;
 import com.project.healthy_life_was.healthy_life.entity.physique.PhysiqueTag;
+import com.project.healthy_life_was.healthy_life.entity.physique.TagType;
 import com.project.healthy_life_was.healthy_life.repository.PhysiqueTagRepository;
 import com.project.healthy_life_was.healthy_life.repository.UserPhysiqueTagRepository;
 import com.sun.jdi.InternalException;
@@ -22,10 +24,9 @@ public class PhysiqueConvertor {
     private final UserPhysiqueTagRepository userPhysiqueTagRepository;
     private final PhysiqueTagRepository physiqueTagRepository;
 
-    // userId로 Dto로 변환
     public List<PhysiqueResponseDto> convertToDtoByUserId (Long userId) {
         List<PhysiqueResponseDto> result = null;
-        Set<Long> userPhysiqueIds = userPhysiqueTagRepository.findByUserId(userId);
+        Set<Long> userPhysiqueIds = userPhysiqueTagRepository.findByUserIdAndTagType(userId, TagType.INCLUDE, TagType.EXCLUDE);
         if(userPhysiqueIds == null){
             userPhysiqueIds = new HashSet<>();
         }
@@ -41,7 +42,15 @@ public class PhysiqueConvertor {
         return result;
     }
 
-    // 전체 조회를 Dto로 변환
+    public PhysiqueNameResponseDto convertPhysiqueByUserId (Long userId) {
+        Set<String> userPhysiqueTagName = userPhysiqueTagRepository.findPhysiqueTagNameByUser_UserId(userId);
+        if(userPhysiqueTagName == null ||  userPhysiqueTagName.isEmpty()){
+            userPhysiqueTagName = new HashSet<>();
+        }
+
+        return new PhysiqueNameResponseDto(userPhysiqueTagName);
+    }
+
     public List<PhysiqueResponseDto> convertAllToDto() {
         List<PhysiqueResponseDto> result = null;
 
@@ -56,7 +65,6 @@ public class PhysiqueConvertor {
         return result;
     }
 
-    // physiqueId로 Dto로 변환(단건)
     public PhysiqueResponseDto convertToDtoByPhysiqueId (Long physiqueId) {
         PhysiqueResponseDto result = null;
         PhysiqueTag physiqueTag = physiqueTagRepository.findById(physiqueId)

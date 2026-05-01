@@ -7,10 +7,10 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
-
     @Query("SELECT COALESCE(AVG(r.reviewRating), 0) FROM Review r WHERE r.orderDetail.product.pId = :pId")
     Double findAverageRatingByProductId(@Param("pId") Long pId);
 
@@ -18,7 +18,21 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     List<Review> findByOrderDetail_Product_pId(Long pId);
 
-    Review findByUser_UsernameAndReviewId(String username, Long reviewId);
+    @Query("""
+        SELECT r FROM Review r
+        WHERE r.user.username = :username
+        AND r.reviewId = :reviewId
+    """)
+    Optional<Review> findByUser_UsernameAndReviewId(@Param("username")String username, @Param("reviewId")Long reviewId);
 
     boolean existsByUser_usernameAndOrderDetail_orderDetailId(String username, Long orderDetailId);
+
+    boolean existsByOrderDetail_OrderDetailId(Long orderDetailId);
+
+    @Query("""
+    SELECT r.orderDetail.product.pId, COALESCE(AVG(r.reviewRating), 0)
+    FROM Review r
+    GROUP BY r.orderDetail.product.pId
+""")
+    List<Object[]> findAllAverageRatings();
 }
