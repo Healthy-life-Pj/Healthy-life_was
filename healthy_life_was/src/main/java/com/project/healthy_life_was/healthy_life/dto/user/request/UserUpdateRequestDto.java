@@ -15,7 +15,6 @@ import java.util.Date;
 @Data
 @Builder(toBuilder = true)
 public class UserUpdateRequestDto {
-
     @Pattern(
             regexp = "^[가-힣a-zA-Z]{2,10}$",
             message = ResponseMessage.VALIDATION_FAIL + "name"

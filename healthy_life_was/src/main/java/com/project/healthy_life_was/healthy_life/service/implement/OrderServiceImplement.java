@@ -154,7 +154,6 @@ public class OrderServiceImplement implements OrderService {
             String shippingRequest = (dto.getShippingRequest() == null || dto.getShippingRequest().isBlank())
                     ? "요청사항 없음" : dto.getShippingRequest();
 
-
             Product product = productRepository.findById(pId)
                     .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "product"));
 
@@ -227,6 +226,7 @@ public class OrderServiceImplement implements OrderService {
         } catch (IllegalArgumentException e) {
             return ResponseDto.setFailed(e.getMessage());
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
         }
     }
@@ -355,6 +355,7 @@ public class OrderServiceImplement implements OrderService {
 
             orderDetail.setPreDeliveryStatus(null);
             orderRepository.save(orderDetail.getOrder());
+
             data = new OrderCancelResponseDto(orderDetail);
         } catch (Exception e) {
             e.printStackTrace();

@@ -10,7 +10,6 @@ import java.util.List;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
-
     List<Product> findAll();
 
     @Query(value = """
@@ -48,4 +47,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 """, nativeQuery = true)
     List<Product> findByUsername(@Param("username") String username);
 
+    @Query("""
+    SELECT count(p)
+    FROM Product p
+    WHERE p.pName = :pName
+    """)
+    boolean existsByPName(@Param("pName") String pName);
 }

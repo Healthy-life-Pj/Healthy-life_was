@@ -13,12 +13,8 @@ import jakarta.validation.Valid;
 
 public interface AuthService {
     ResponseDto<SignUpResponseDto> signUp(@Valid SignUpRequestDto dto);
-
     ResponseDto<LoginResponseDto> login(@Valid LoginRequestDto dto);
-
     ResponseDto<Boolean> duplicateUserName(@Valid String username);
-
     ResponseDto<Boolean> duplicateUserNickName(@Valid String userNickName);
-
     ResponseDto<FindInfoResponseDto> recoveryEmail(FindInfoRequestDto dto) throws MessagingException;
 }

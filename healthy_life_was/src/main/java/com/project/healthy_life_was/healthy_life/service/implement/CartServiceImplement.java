@@ -26,7 +26,6 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class CartServiceImplement implements CartService {
-
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
     private final UserRepository userRepository;
@@ -82,18 +81,8 @@ public class CartServiceImplement implements CartService {
     public ResponseDto<CartDetailResponseDto> getCartUser(String username) {
         try {
             List<CartItem> cartItems = cartItemRepository.findByCart_User_Username(username);
-            List<CartItemDto> cartItemDto = cartItems.stream()
-                    .map(cart -> new CartItemDto(
-                            cart.getCartItemId(),
-                            cart.getProduct().getPId(),
-                            cart.getProduct().getPName(),
-                            cart.getProductQuantity(),
-                            cart.getProductPrice(),
-                            cart.getProduct().getPImgUrl()
-                    ))
-                    .toList();
-            CartDetailResponseDto cartDetailResponseDto = new CartDetailResponseDto(cartItemDto);
-            return ResponseDto.setSuccess(ResponseMessage.SUCCESS, cartDetailResponseDto);
+            List<CartItemDto> cartItemDto = cartItems.stream().map(this::toCartItemDto).toList();
+            return ResponseDto.setSuccess(ResponseMessage.SUCCESS, new CartDetailResponseDto(cartItemDto));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
@@ -172,18 +161,7 @@ public class CartServiceImplement implements CartService {
             if(cartItems.isEmpty()) {
                 return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_DATA + "cartItems");
             }
-            List<CartItemDto> cartItemDto = cartItems.stream()
-                    .map( cart -> new CartItemDto(
-                            cart.getCartItemId(),
-                            cart.getProduct().getPId(),
-                            cart.getProduct().getPName(),
-                            cart.getProductQuantity(),
-                            cart.getProductPrice(),
-                            cart.getProduct().getPImgUrl()
-                    ))
-                    .toList();
-
-            data = new CartDetailResponseDto(cartItemDto);
+            data = new CartDetailResponseDto(cartItems.stream().map(this::toCartItemDto).toList());
         } catch (Exception e) {
             return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_DATA);
         }
@@ -203,19 +181,21 @@ public class CartServiceImplement implements CartService {
             if (cartItems.isEmpty()) {
                 return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_DATA + "cartItems");
             }
-            List<CartItemDto> cartItemDto = cartItems.stream()
-                    .map( cart -> new CartItemDto(
-                            cart.getCartItemId(),
-                            cart.getProduct().getPId(),
-                            cart.getProduct().getPName(),
-                            cart.getProductQuantity(),
-                            cart.getProductPrice(),
-                            cart.getProduct().getPImgUrl()
-                    )).toList();
-            data = new CartDetailResponseDto(cartItemDto);
+            data = new CartDetailResponseDto(cartItems.stream().map(this::toCartItemDto).toList());
         } catch (Exception e) {
             return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_DATA);
         }
         return ResponseDto.setSuccess(ResponseMessage.SUCCESS, data);
+    }
+
+    private CartItemDto toCartItemDto(CartItem item) {
+        return new CartItemDto(
+                item.getCartItemId(),
+                item.getProduct().getPId(),
+                item.getProduct().getPName(),
+                item.getProductQuantity(),
+                item.getProductPrice(),
+                item.getProduct().getPImgUrl()
+        );
     }
 }
