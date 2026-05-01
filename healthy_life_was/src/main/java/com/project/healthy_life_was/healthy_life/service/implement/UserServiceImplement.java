@@ -6,7 +6,6 @@ import com.project.healthy_life_was.healthy_life.dto.user.request.PasswordUpdate
 import com.project.healthy_life_was.healthy_life.dto.user.request.UserDeleteRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.user.request.UserUpdateRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.user.response.UserInfoResponseDto;
-import com.project.healthy_life_was.healthy_life.entity.user.Gender;
 import com.project.healthy_life_was.healthy_life.entity.user.User;
 import com.project.healthy_life_was.healthy_life.repository.DeliverAddressRepository;
 import com.project.healthy_life_was.healthy_life.provider.JwtProvider;
@@ -15,6 +14,7 @@ import com.project.healthy_life_was.healthy_life.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 
@@ -42,35 +42,25 @@ public class UserServiceImplement implements UserService {
     }
 
     @Override
+    @Transactional
     public ResponseDto<UserInfoResponseDto> updateUserInfo(String username, UserUpdateRequestDto dto) {
-        UserInfoResponseDto data = null;
-        String inputName = dto.getName();
-        String inputNickName = dto.getUserNickName();
-        String inputEmail = dto.getUserEmail();
-        String inputPhone = dto.getUserPhone();
-        Date inputBirth = dto.getUserBirth();
-        Gender inputGender = dto.getUserGender();
-
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_USER));
 
-        User updatedUser = user.toBuilder()
-                .name(inputName != null? inputName : user.getName())
-                .userNickName(inputNickName != null? inputNickName : user.getUserNickName())
-                .userEmail(inputEmail != null? inputEmail : user.getUserEmail())
-                .userPhone(inputPhone != null? inputPhone : user.getUserPhone())
-                .userBirth(inputBirth != null? inputBirth : user.getUserBirth())
-                .userGender(inputGender != null? inputGender : user.getUserGender())
-                .build();
+        if (dto.getName() != null)         user.setName(dto.getName());
+        if (dto.getUserNickName() != null)  user.setUserNickName(dto.getUserNickName());
+        if (dto.getUserEmail() != null)     user.setUserEmail(dto.getUserEmail());
+        if (dto.getUserPhone() != null)     user.setUserPhone(dto.getUserPhone());
+        if (dto.getUserBirth() != null)     user.setUserBirth(dto.getUserBirth());
+        if (dto.getUserGender() != null)    user.setUserGender(dto.getUserGender());
 
-        userRepository.save(updatedUser);
+        userRepository.save(user);
 
-        data = new UserInfoResponseDto(updatedUser);
-
-        return ResponseDto.setSuccess(ResponseMessage.SUCCESS, data);
+        return ResponseDto.setSuccess(ResponseMessage.SUCCESS, new UserInfoResponseDto(user));
     }
 
     @Override
+    @Transactional
     public ResponseDto<Void> updatePwByMyPage(String username, PasswordUpdateRequestDto dto) {
         String currentPassword = dto.getCurrentPassword();
         String password = dto.getUserPassword();
@@ -86,16 +76,14 @@ public class UserServiceImplement implements UserService {
             return ResponseDto.setFailed(ResponseMessage.PASSWORD_MISMATCH);
         }
 
-        String encodePassword = passwordEncoder.encode(password);
-        User updatedUser = user.toBuilder()
-                .password(encodePassword)
-                .build();
-        userRepository.save(updatedUser);
+        user.setPassword(passwordEncoder.encode(password));
+        userRepository.save(user);
 
         return ResponseDto.setSuccess(ResponseMessage.SUCCESS, null);
     }
 
     @Override
+    @Transactional
     public ResponseDto<Void> updatePwByEmailToken(String token, PasswordUpdateRequestDto dto) {
         String password = dto.getUserPassword();
         String confirmUserPassword = dto.getConfirmUserPassword();
@@ -107,11 +95,8 @@ public class UserServiceImplement implements UserService {
             return ResponseDto.setFailed(ResponseMessage.PASSWORD_MISMATCH);
         }
 
-        String encodePassword = passwordEncoder.encode(password);
-        User updatedUser = user.toBuilder()
-                .password(encodePassword)
-                .build();
-        userRepository.save(updatedUser);
+        user.setPassword(passwordEncoder.encode(password));
+        userRepository.save(user);
 
         return ResponseDto.setSuccess(ResponseMessage.SUCCESS, null);
     }

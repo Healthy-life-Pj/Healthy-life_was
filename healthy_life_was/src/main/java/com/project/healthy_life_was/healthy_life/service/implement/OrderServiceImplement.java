@@ -154,9 +154,6 @@ public class OrderServiceImplement implements OrderService {
             String shippingRequest = (dto.getShippingRequest() == null || dto.getShippingRequest().isBlank())
                     ? "요청사항 없음" : dto.getShippingRequest();
 
-            User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "user"));
-
             Product product = productRepository.findById(pId)
                     .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_DATA + "product"));
 
