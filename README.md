@@ -45,7 +45,6 @@ src/main/java/com/project/healthy_life_was/healthy_life/
 | 회원 (User) | `/api/v1/users` |
 | 상품 (Product) | `/api/v1/products` |
 | 주문 (Order) | `/api/v1/orders` |
-| 결제 (Payment) | `/api/v1/payment` |
 | 배송 (Shipping) | `/api/v1/shipping` |
 | 위시리스트 | `/api/v1/wish-lists` |
 | 장바구니 (Cart) | `/api/v1/carts` |
