@@ -55,7 +55,8 @@ public class OAuth2UserServiceImplement
                 nickname = (String) response.get("nickname");
                 name = (String) response.get("name");
                 email = (String) response.get("email");
-                phone = (String) response.get("mobile");
+                String rawPhone = (String) response.get("mobile");
+                phone = (rawPhone != null) ? rawPhone.replace("-", "") : null;
                 genderStr = (String) response.get("gender");
                 birthyear = (String) response.get("birthyear");
                 birthday = (String) response.get("birthday");
