@@ -40,7 +40,7 @@ public class UserUpdateRequestDto {
     )
     private String userPhone;
 
-    private Date userBirth;pu
+    private Date userBirth;
 
     private Gender userGender;
 }
