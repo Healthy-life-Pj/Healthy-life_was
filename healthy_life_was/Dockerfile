@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY .. .
 
-WORKDIR /app/healthy_life_was
+WORKDIR /app
 
 RUN chmod +x gradlew
 RUN ./gradlew build
