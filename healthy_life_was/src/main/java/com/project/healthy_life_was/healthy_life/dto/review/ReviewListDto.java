@@ -18,7 +18,6 @@ public class ReviewListDto {
     private String pName;
     @JsonProperty("pId")
     private Long pId;
-    private String pImgUrl;
     private String userNickName;
     private Double reviewRating;
     private String reviewContent;
@@ -30,7 +29,6 @@ public class ReviewListDto {
         this.reviewId = review.getReviewId();
         this.pName = review.getOrderDetail().getProduct().getPName();
         this.pId = review.getOrderDetail().getProduct().getPId();
-        this.pImgUrl = review.getOrderDetail().getProduct().getPImgUrl();
         this.userNickName = review.getUser().getUserNickName();
         this.reviewRating = review.getReviewRating();
         this.reviewContent = review.getReviewContent();
@@ -38,4 +36,5 @@ public class ReviewListDto {
         this.reviewCreatAt = review.getReviewCreatAt();
         this.orderDate = review.getOrderDetail().getOrder().getOrderDate();
     }
+
 }
