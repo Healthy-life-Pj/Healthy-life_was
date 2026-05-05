@@ -29,7 +29,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
-
+        
+        String uri = request.getRequestURI();
+        if (uri.startsWith("/imgs/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         String bearer = request.getHeader("Authorization");
 
         if (bearer != null && bearer.startsWith("Bearer ")) {
