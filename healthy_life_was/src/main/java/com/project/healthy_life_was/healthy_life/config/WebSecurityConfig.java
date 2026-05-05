@@ -4,6 +4,7 @@ import com.project.healthy_life_was.healthy_life.filter.JwtAuthenticationFilter;
 
 import com.project.healthy_life_was.healthy_life.handler.OAuth2SuccessHandler;
 import com.project.healthy_life_was.healthy_life.service.implement.OAuth2UserServiceImplement;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,27 +72,27 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(
-                                new AntPathRequestMatcher("/api/v1/auth/**"),
-                                new AntPathRequestMatcher("/api/v1/mail/**"),
-                                new AntPathRequestMatcher("/api/v1/wish-lists/count/**"),
-                                new AntPathRequestMatcher("/upload/**"),
-                                new AntPathRequestMatcher("/file/**"),
-                                new AntPathRequestMatcher("/oauth2/callback/**"),
-                                new AntPathRequestMatcher("/imgs/**")
-                        )
-                        .permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/api/v1/users/me/password/email").permitAll()
-                        .anyRequest().authenticated())
+                                "/api/v1/auth/**",
+                                "/api/v1/mail/**",
+                                "/api/v1/wish-lists/count/**",
+                                "/upload/**",
+                                "/file/**",
+                                "/oauth2/callback/**",
+                                "/imgs/**"
+                        ).permitAll()
+                        .anyRequest().authenticated()
+                )
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        })
+                )
                 .oauth2Login(oauth2 -> oauth2
-                        .redirectionEndpoint(endpoint ->
-                                endpoint.baseUri("/oauth2/callback/*"))
-                        .authorizationEndpoint(endpoint ->
-                                endpoint.baseUri("/oauth2/authorization"))
-                        .userInfoEndpoint(endpoint ->
-                                endpoint.userService(oAuth2UserServiceImplement))
+                        .redirectionEndpoint(endpoint -> endpoint.baseUri("/oauth2/callback/*"))
+                        .authorizationEndpoint(endpoint -> endpoint.baseUri("/oauth2/authorization"))
+                        .userInfoEndpoint(endpoint -> endpoint.userService(oAuth2UserServiceImplement))
                         .successHandler(oAuth2SuccessHandler)
                 )
-
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
