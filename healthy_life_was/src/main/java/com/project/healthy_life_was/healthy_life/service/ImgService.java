@@ -21,7 +21,9 @@ private final Cloudinary cloudinary;
             Map uploadResult = cloudinary.uploader().upload(
                     file.getBytes(),
                     ObjectUtils.asMap(
-                            "folder", folderName
+                            "folder", folderName,
+                            "public_id", file.getOriginalFilename(),
+                            "overwrite", true
                     )
             );
 
