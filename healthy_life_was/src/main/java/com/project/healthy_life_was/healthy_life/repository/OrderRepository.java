@@ -24,10 +24,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     FROM Order o
     JOIN FETCH o.orderDetails od
     WHERE o.user.username = :username
-    AND (
-        (:startOrderDate IS NULL OR o.orderDate >= :startOrderDate)
-        AND (:endOrderDate IS NULL OR o.orderDate <= :endOrderDate)
-    )
+    AND o.orderDate BETWEEN :startOrderDate AND :endOrderDate
     ORDER BY o.orderDate DESC
 """)
     List<Order> findAllByUser_usernameAndStartAndEnd(String username, LocalDateTime startOrderDate, LocalDateTime endOrderDate);
