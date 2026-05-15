@@ -67,6 +67,12 @@ public class MailService {
 
     public ResponseDto<String> sendMessageId(FindIdRequestDto dto) throws MessagingException {
         try {
+            Optional<User> userOptional =
+                    authRepository.findByNameAndUserEmail(dto.getName(), dto.getUserEmail());
+
+            if(userOptional.isEmpty()){
+                return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_USER);
+            }
             String token = jwtProvider.generateJwtTokenByEmailId(dto.getName(), dto.getUserEmail());
 
             MimeMessage message = createMailForId(dto.getUserEmail(), token);
