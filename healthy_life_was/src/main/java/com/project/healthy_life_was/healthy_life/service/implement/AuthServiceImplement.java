@@ -2,6 +2,7 @@ package com.project.healthy_life_was.healthy_life.service.implement;
 
 import com.project.healthy_life_was.healthy_life.common.constant.ResponseMessage;
 import com.project.healthy_life_was.healthy_life.dto.ResponseDto;
+import com.project.healthy_life_was.healthy_life.dto.auth.request.FindIdRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.auth.request.FindInfoRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.auth.request.LoginRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.auth.request.SignUpRequestDto;
@@ -231,16 +232,31 @@ public class AuthServiceImplement implements AuthService {
                     return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_USER);
                 }
 
-                String token = jwtProvider.generateJwtTokenByEmail(email);
-                MimeMessage message = mailService.createMailForId(email, token);
-                javaMailSender.send(message);
-                return ResponseDto.setSuccess(ResponseMessage.SUCCESS, new FindInfoResponseDto(message, user.get().getUsername(), null));
+                mailService.sendMessageId(
+                        new FindIdRequestDto(
+                                user.get().getName(),
+                                email
+                        )
+                );
+                return ResponseDto.setSuccess(
+                        ResponseMessage.SUCCESS,
+                        new FindInfoResponseDto(
+                                null,
+                                user.get().getUsername(),
+                                null
+                        )
+                );
+
             } else {
-                User user = authRepository.findByUsername(username);
-                String token = jwtProvider.generateJwtToken(username, user.getUserNickName());
-                MimeMessage message = mailService.createMailForPw(email, username, token);
-                javaMailSender.send(message);
-                return ResponseDto.setSuccess(ResponseMessage.SUCCESS, new FindInfoResponseDto(message, null, token));
+                mailService.sendMessagePw(dto);
+                return ResponseDto.setSuccess(
+                        ResponseMessage.SUCCESS,
+                        new FindInfoResponseDto(
+                                null,
+                                null,
+                                "메일 전송 완료"
+                        )
+                );
             }
         } catch (Exception e) {
             return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
