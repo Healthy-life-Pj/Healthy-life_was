@@ -36,7 +36,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         int exprTime = jwtProvider.getExpiration();
 
         response.sendRedirect(
-                "http://localhost:3000/oauth?token="
+                "https://healthy-life-web-eta.vercel.app/oauth?token="
                         + token
                         + "&exprTime="
                         + exprTime
