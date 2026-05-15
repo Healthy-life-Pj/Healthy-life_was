@@ -72,6 +72,7 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(
+                                "/",
                                 "/api/v1/auth/**",
                                 "/api/v1/mail/**",
                                 "/api/v1/wish-lists/count/**",
