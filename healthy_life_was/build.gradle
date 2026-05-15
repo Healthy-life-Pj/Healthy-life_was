@@ -38,9 +38,6 @@ dependencies {
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-	//resend
-	implementation 'com.resend:resend-java:3.1.0'
-
 	// 프로젝트 유효성 검사를 위한 의존성 입력
 	implementation('jakarta.validation:jakarta.validation-api:3.0.2')
 	implementation('commons-validator:commons-validator:1.7')
