@@ -41,7 +41,6 @@ public class AuthServiceImplement implements AuthService {
     private final BCryptPasswordEncoder bCryptpasswordEncoder;
     private final JwtProvider jwtProvider;
     private final MailService mailService;
-    private final JavaMailSender javaMailSender;
 
     @Override
     public ResponseDto<SignUpResponseDto> signUp(SignUpRequestDto dto) {
