@@ -26,7 +26,7 @@ public class MailService {
     private final AuthRepository authRepository;
     private final JwtProvider jwtProvider;
 
-    @Value("${resend.api.key}")
+    @Value("${RESEND_API_KEY}")
     private String resendApiKey;
 
     public ResponseDto<String> sendMessageId(FindIdRequestDto dto) {
