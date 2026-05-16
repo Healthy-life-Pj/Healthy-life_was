@@ -101,13 +101,13 @@ public class MailService {
 
             var response = sg.api(request);
 
+            System.out.println("상태코드: " + response.getStatusCode());
+
+            System.out.println("바디: " + response.getBody());
+
+            System.out.println("헤더: " + response.getHeaders());
+
             if(response.getStatusCode() != 202){
-
-                System.out.println(response.getStatusCode());
-
-                System.out.println(response.getBody());
-
-                System.out.println(response.getHeaders());
 
                 throw new RuntimeException(
                         "메일 전송 실패"
