@@ -16,11 +16,7 @@ import com.sendgrid.helpers.mail.objects.Content;
 import com.sendgrid.helpers.mail.objects.Email;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.MailException;
 import org.springframework.stereotype.Service;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 
 import java.util.Optional;
 
@@ -103,8 +99,17 @@ public class MailService {
 
             request.setBody(mail.build());
 
-            sg.api(request);
+            var response = sg.api(request);
+            
+            if(response.getStatusCode() != 202){
+                throw new RuntimeException("메일 전송 실패");
+            }
 
+            System.out.println(response.getStatusCode());
+
+            System.out.println(response.getBody());
+
+            System.out.println(response.getHeaders());
         } catch (Exception e) {
 
             e.printStackTrace();
