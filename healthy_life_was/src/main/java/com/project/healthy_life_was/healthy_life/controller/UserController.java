@@ -58,16 +58,6 @@ public class UserController {
         return ResponseEntity.status(status).body(response);
     }
 
-    @PutMapping(UPDATE_PASSWORD_BY_EMAIL)
-    private ResponseEntity<ResponseDto<Void>> updatePwByEmailToken (
-            @RequestBody PasswordUpdateRequestDto dto,
-            @RequestParam @Valid String token
-    ) {
-        ResponseDto<Void> response = userService.updatePwByEmailToken(token, dto);
-        HttpStatus status = response.isResult() ? HttpStatus.NO_CONTENT : HttpStatus.FORBIDDEN;
-        return ResponseEntity.status(status).body(response);
-    }
-
     @DeleteMapping
     private ResponseEntity<ResponseDto<Void>> deleteUser (
             @AuthenticationPrincipal PrincipalUser principalUser,

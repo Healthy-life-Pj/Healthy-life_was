@@ -5,9 +5,11 @@ import com.project.healthy_life_was.healthy_life.dto.ResponseDto;
 import com.project.healthy_life_was.healthy_life.dto.auth.request.FindIdRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.auth.request.FindInfoRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.auth.response.FindIdResponseDto;
+import com.project.healthy_life_was.healthy_life.dto.user.request.PasswordUpdateRequestDto;
 import com.project.healthy_life_was.healthy_life.entity.user.User;
 import com.project.healthy_life_was.healthy_life.provider.JwtProvider;
 import com.project.healthy_life_was.healthy_life.repository.AuthRepository;
+import com.project.healthy_life_was.healthy_life.repository.UserRepository;
 import com.sendgrid.Method;
 import com.sendgrid.Request;
 import com.sendgrid.SendGrid;
@@ -16,7 +18,9 @@ import com.sendgrid.helpers.mail.objects.Content;
 import com.sendgrid.helpers.mail.objects.Email;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -25,6 +29,8 @@ import java.util.Optional;
 public class MailService {
     private final AuthRepository authRepository;
     private final JwtProvider jwtProvider;
+    private final BCryptPasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
 
     @Value("${mail.sender.email}")
     private String senderEmail;
@@ -188,5 +194,49 @@ public class MailService {
             return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
         }
         return ResponseDto.setSuccess(ResponseMessage.SUCCESS, data);
+    }
+
+    @Transactional
+    public ResponseDto<Void> updatePwByEmailToken(
+            String token,
+            PasswordUpdateRequestDto dto
+    ) {
+
+        System.out.println(token);
+
+        String password = dto.getUserPassword();
+
+        String confirmUserPassword =
+                dto.getConfirmUserPassword();
+
+        String username =
+                jwtProvider.getUsernameFromJwt(token);
+
+        System.out.println(username);
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                ResponseMessage.NOT_EXIST_USER
+                        )
+                );
+
+        if (!password.equals(confirmUserPassword)) {
+
+            return ResponseDto.setFailed(
+                    ResponseMessage.PASSWORD_MISMATCH
+            );
+        }
+
+        user.setPassword(
+                passwordEncoder.encode(password)
+        );
+
+        userRepository.save(user);
+
+        return ResponseDto.setSuccess(
+                ResponseMessage.SUCCESS,
+                null
+        );
     }
 }
