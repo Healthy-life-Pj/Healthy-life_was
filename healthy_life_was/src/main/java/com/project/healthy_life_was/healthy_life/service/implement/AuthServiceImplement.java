@@ -224,33 +224,52 @@ public class AuthServiceImplement implements AuthService {
         String username = dto.getUsername();
 
         try {
-            if(dto.getUsername() == null) {
+            if (dto.getUsername() == null) {
+
+                Optional<User> user =
+                        authRepository.findByUserEmail(email);
+
+                if (user.isEmpty()) {
+
+                    return ResponseDto.setFailed(
+                            ResponseMessage.NOT_EXIST_USER
+                    );
+                }
+
+                FindIdRequestDto requestDto =
+                        new FindIdRequestDto();
+
+                requestDto.setName(
+                        user.get().getName()
+                );
+
+                requestDto.setUserEmail(email);
+
                 ResponseDto<String> result =
                         mailService.sendMessageId(
-                                new FindIdRequestDto(
-                                        dto
-                                )
+                                requestDto
                         );
 
                 if (!result.isResult()) {
+
                     return ResponseDto.setFailed(
                             result.getMessage()
                     );
                 }
-                Optional<User> user = authRepository.findByUserEmail(email);
 
-                if (user.isEmpty()) {
-                    return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_USER);
-                }
-
-                String token = jwtProvider.generateJwtTokenByEmail(email);
-
-                return ResponseDto.setSuccess(ResponseMessage.SUCCESS, new FindInfoResponseDto(message, user.get().getUsername(), null));
+                return ResponseDto.setSuccess(
+                        ResponseMessage.SUCCESS,
+                        new FindInfoResponseDto(
+                                null,
+                                user.get().getUsername(),
+                                null
+                        )
+                );
             } else {
                 User user = authRepository.findByUsername(username);
                 String token = jwtProvider.generateJwtToken(username, user.getUserNickName());
 
-                return ResponseDto.setSuccess(ResponseMessage.SUCCESS, new FindInfoResponseDto(message, null, token));
+                return ResponseDto.setSuccess(ResponseMessage.SUCCESS, new FindInfoResponseDto(null, null, token));
             }
         } catch (Exception e) {
             return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
