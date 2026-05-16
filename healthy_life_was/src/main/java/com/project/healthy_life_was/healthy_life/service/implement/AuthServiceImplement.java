@@ -40,7 +40,6 @@ public class AuthServiceImplement implements AuthService {
     private final BCryptPasswordEncoder bCryptpasswordEncoder;
     private final JwtProvider jwtProvider;
     private final MailService mailService;
-    private final JavaMailSender javaMailSender;
 
     @Override
     public ResponseDto<SignUpResponseDto> signUp(SignUpRequestDto dto) {
@@ -232,14 +231,12 @@ public class AuthServiceImplement implements AuthService {
                 }
 
                 String token = jwtProvider.generateJwtTokenByEmail(email);
-                MimeMessage message = mailService.createMailForId(email, token);
-                javaMailSender.send(message);
+
                 return ResponseDto.setSuccess(ResponseMessage.SUCCESS, new FindInfoResponseDto(message, user.get().getUsername(), null));
             } else {
                 User user = authRepository.findByUsername(username);
                 String token = jwtProvider.generateJwtToken(username, user.getUserNickName());
-                MimeMessage message = mailService.createMailForPw(email, username, token);
-                javaMailSender.send(message);
+    
                 return ResponseDto.setSuccess(ResponseMessage.SUCCESS, new FindInfoResponseDto(message, null, token));
             }
         } catch (Exception e) {
