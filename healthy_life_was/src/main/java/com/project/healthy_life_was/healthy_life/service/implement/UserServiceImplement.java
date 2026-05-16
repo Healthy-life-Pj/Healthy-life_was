@@ -84,21 +84,47 @@ public class UserServiceImplement implements UserService {
 
     @Override
     @Transactional
-    public ResponseDto<Void> updatePwByEmailToken(String token, PasswordUpdateRequestDto dto) {
+    public ResponseDto<Void> updatePwByEmailToken(
+            String token,
+            PasswordUpdateRequestDto dto
+    ) {
+
+        System.out.println(token);
+
         String password = dto.getUserPassword();
-        String confirmUserPassword = dto.getConfirmUserPassword();
-        String username = jwtProvider.getUsernameFromJwt(token);
+
+        String confirmUserPassword =
+                dto.getConfirmUserPassword();
+
+        String username =
+                jwtProvider.getUsernameFromJwt(token);
+
+        System.out.println(username);
+
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException(ResponseMessage.NOT_EXIST_USER));
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                ResponseMessage.NOT_EXIST_USER
+                        )
+                );
 
         if (!password.equals(confirmUserPassword)) {
-            return ResponseDto.setFailed(ResponseMessage.PASSWORD_MISMATCH);
+
+            return ResponseDto.setFailed(
+                    ResponseMessage.PASSWORD_MISMATCH
+            );
         }
 
-        user.setPassword(passwordEncoder.encode(password));
+        user.setPassword(
+                passwordEncoder.encode(password)
+        );
+
         userRepository.save(user);
 
-        return ResponseDto.setSuccess(ResponseMessage.SUCCESS, null);
+        return ResponseDto.setSuccess(
+                ResponseMessage.SUCCESS,
+                null
+        );
     }
 
     @Override
