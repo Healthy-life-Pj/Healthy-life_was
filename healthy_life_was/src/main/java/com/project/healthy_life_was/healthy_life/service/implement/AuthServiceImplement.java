@@ -2,6 +2,7 @@ package com.project.healthy_life_was.healthy_life.service.implement;
 
 import com.project.healthy_life_was.healthy_life.common.constant.ResponseMessage;
 import com.project.healthy_life_was.healthy_life.dto.ResponseDto;
+import com.project.healthy_life_was.healthy_life.dto.auth.request.FindIdRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.auth.request.FindInfoRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.auth.request.LoginRequestDto;
 import com.project.healthy_life_was.healthy_life.dto.auth.request.SignUpRequestDto;
@@ -218,12 +219,24 @@ public class AuthServiceImplement implements AuthService {
     }
 
     @Override
-    public ResponseDto<FindInfoResponseDto> recoveryEmail(FindInfoRequestDto dto) throws MessagingException {
+    public ResponseDto<FindInfoResponseDto> recoveryEmail(FindInfoRequestDto dto) {
         String email = dto.getEmail();
         String username = dto.getUsername();
 
         try {
-            if(username == null) {
+            if(dto.getUsername() == null) {
+                ResponseDto<String> result =
+                        mailService.sendMessageId(
+                                new FindIdRequestDto(
+                                        dto
+                                )
+                        );
+
+                if (!result.isResult()) {
+                    return ResponseDto.setFailed(
+                            result.getMessage()
+                    );
+                }
                 Optional<User> user = authRepository.findByUserEmail(email);
 
                 if (user.isEmpty()) {
@@ -236,7 +249,7 @@ public class AuthServiceImplement implements AuthService {
             } else {
                 User user = authRepository.findByUsername(username);
                 String token = jwtProvider.generateJwtToken(username, user.getUserNickName());
-    
+
                 return ResponseDto.setSuccess(ResponseMessage.SUCCESS, new FindInfoResponseDto(message, null, token));
             }
         } catch (Exception e) {
