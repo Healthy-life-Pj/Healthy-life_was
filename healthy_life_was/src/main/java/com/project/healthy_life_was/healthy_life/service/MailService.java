@@ -100,16 +100,19 @@ public class MailService {
             request.setBody(mail.build());
 
             var response = sg.api(request);
-            
+
             if(response.getStatusCode() != 202){
-                throw new RuntimeException("메일 전송 실패");
+
+                System.out.println(response.getStatusCode());
+
+                System.out.println(response.getBody());
+
+                System.out.println(response.getHeaders());
+
+                throw new RuntimeException(
+                        "메일 전송 실패"
+                );
             }
-
-            System.out.println(response.getStatusCode());
-
-            System.out.println(response.getBody());
-
-            System.out.println(response.getHeaders());
         } catch (Exception e) {
 
             e.printStackTrace();
