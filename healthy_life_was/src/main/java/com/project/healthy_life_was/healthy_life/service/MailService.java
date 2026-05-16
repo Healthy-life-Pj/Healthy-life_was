@@ -13,80 +13,112 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.stereotype.Service;
 import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
-import org.springframework.mail.javamail.JavaMailSender;
+import com.sendgrid.*;
+import com.sendgrid.helpers.mail.Mail;
+import com.sendgrid.helpers.mail.objects.Content;
+import com.sendgrid.helpers.mail.objects.Email;
 
+import java.io.IOException;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class MailService {
-    private final JavaMailSender javaMailSender;
     private final AuthRepository authRepository;
     private final JwtProvider jwtProvider;
 
     @Value("${mail.sender.email}")
     private String senderEmail;
 
-    public MimeMessage createMailForId (String email, String token) throws MessagingException {
-        MimeMessage message = javaMailSender.createMimeMessage();
-        message.setFrom(senderEmail);
-        message.setRecipients(MimeMessage.RecipientType.TO, email);
-        message.setSubject("HealthyLife 아이디 이메일 인증");
+    @Value("${sendgrid.api.key}")
+    private String sendGridApiKey;
 
-        String body = "";
-        body = "<h3> HealthyLife 이메일 인증 링크입니다.</h3>";
-        body += "<a href=\"https://healthy-life-web-eta.vercel.app/find-id/verify-find-username?token=" + token + "\"> 해당 링크를 클릭하여 인증을 완료해 주세요.</a>";
-        body += "<p>감사합니다.</p>";
+    public void sendMail(
+            String toEmail,
+            String subject,
+            String html
+    ) throws IOException {
 
-        message.setText(body, "UTF-8", "html");
-        return message;
+        Email from = new Email(senderEmail);
+
+        Email to = new Email(toEmail);
+
+        Content content = new Content(
+                "text/html",
+                html
+        );
+
+        Mail mail = new Mail(
+                from,
+                subject,
+                to,
+                content
+        );
+
+        SendGrid sg = new SendGrid(sendGridApiKey);
+
+        Request request = new Request();
+
+        request.setMethod(Method.POST);
+        request.setEndpoint("mail/send");
+        request.setBody(mail.build());
+
+        Response response = sg.api(request);
+
+        System.out.println(response.getStatusCode());
     }
 
-    public MimeMessage createMailForPw(String email, String username, String token) throws MessagingException {
-        MimeMessage message = javaMailSender.createMimeMessage();
-        message.setFrom(senderEmail);
-        message.setRecipients(MimeMessage.RecipientType.TO, email);
+    public ResponseDto<String> sendMessageId(FindIdRequestDto dto) {
 
-        String subject;
-        String body;
-
-        subject = "HealthyLife 이메일 인증 링크";
-        body = "<h3>" + username + "님 HealthyLife 이메일 인증 링크입니다.</h3>";
-        body += "<a href=\"https://healthy-life-web-eta.vercel.app/find-password/" + token + "\"> 해당 링크를 클릭하여 인증을 완료해 주세요.</a>";
-        body += "<p>감사합니다.</p>";
-
-        message.setSubject(subject);
-        message.setText(body, "UTF-8", "html");
-        return message;
-    }
-
-    public void sendMail(MimeMessage message) throws MessagingException {
-        javaMailSender.send(message);
-    }
-
-    public ResponseDto<String> sendMessageId(FindIdRequestDto dto) throws MessagingException {
         try {
+
             Optional<User> userOptional =
-                    authRepository.findByNameAndUserEmail(dto.getName(), dto.getUserEmail());
+                    authRepository.findByNameAndUserEmail(
+                            dto.getName(),
+                            dto.getUserEmail()
+                    );
 
-            if(userOptional.isEmpty()){
-                return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_USER);
-            }
-            String token = jwtProvider.generateJwtTokenByEmailId(dto.getName(), dto.getUserEmail());
+            if (userOptional.isEmpty()) {
 
-            MimeMessage message = createMailForId(dto.getUserEmail(), token);
-            try {
-                javaMailSender.send(message);
-                return ResponseDto.setSuccess(ResponseMessage.MESSAGE_TOKEN_SUCCESS, token);
-            } catch (MailException e) {
-                e.printStackTrace();
-                return ResponseDto.setFailed(ResponseMessage.MESSAGE_SEND_FAIL);
+                return ResponseDto.setFailed(
+                        ResponseMessage.NOT_EXIST_USER
+                );
             }
 
-        } catch (MailException e) {
+            String token =
+                    jwtProvider.generateJwtTokenByEmailId(
+                            dto.getName(),
+                            dto.getUserEmail()
+                    );
+
+            String body = "";
+
+            body += "<h3>HealthyLife 이메일 인증 링크입니다.</h3>";
+
+            body += "<a href=\"https://healthy-life-web-eta.vercel.app/find-id/verify-find-username?token="
+                    + token +
+                    "\">해당 링크를 클릭하여 인증을 완료해 주세요.</a>";
+
+            body += "<p>감사합니다.</p>";
+
+            sendMail(
+                    dto.getUserEmail(),
+                    "HealthyLife 아이디 이메일 인증",
+                    body
+            );
+
+            return ResponseDto.setSuccess(
+                    ResponseMessage.MESSAGE_TOKEN_SUCCESS,
+                    token
+            );
+
+        } catch (Exception e) {
+
             e.printStackTrace();
-            return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
+
+            return ResponseDto.setFailed(
+                    ResponseMessage.MESSAGE_SEND_FAIL
+            );
         }
     }
 
@@ -97,16 +129,33 @@ public class MailService {
                 return ResponseDto.setFailed(ResponseMessage.NOT_EXIST_USER);
             }
             User user = userOptional.get();
-            String token = jwtProvider.generateJwtToken(user.getUsername(), user.getUserNickName());
+            String token = jwtProvider.generateJwtToken(
+                    user.getUsername(),
+                    user.getUserNickName()
+            );
 
-            MimeMessage message = createMailForPw(user.getUserEmail(), user.getUsername(), token);
-            try {
-                javaMailSender.send(message);
-                return ResponseDto.setSuccess(ResponseMessage.MESSAGE_TOKEN_SUCCESS, token);
-            } catch (MailException e) {
-                e.printStackTrace();
-                return ResponseDto.setFailed(ResponseMessage.MESSAGE_SEND_FAIL);
-            }
+            String body = "";
+
+            body += "<h3>"
+                    + user.getUsername()
+                    + "님 HealthyLife 이메일 인증 링크입니다.</h3>";
+
+            body += "<a href=\"https://healthy-life-web-eta.vercel.app/find-password/"
+                    + token +
+                    "\">해당 링크를 클릭하여 인증을 완료해 주세요.</a>";
+
+            body += "<p>감사합니다.</p>";
+
+            sendMail(
+                    user.getUserEmail(),
+                    "HealthyLife 비밀번호 재설정 인증",
+                    body
+            );
+
+            return ResponseDto.setSuccess(
+                    ResponseMessage.MESSAGE_TOKEN_SUCCESS,
+                    token
+            );
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseDto.setFailed(ResponseMessage.DATABASE_ERROR);
